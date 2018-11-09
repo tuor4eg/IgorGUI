@@ -9,7 +9,7 @@
 import React, {Component} from 'react';
 import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight, FlatList } from 'react-native';
 
-export default class GroupList extends Component {
+export default class UserList extends Component {
     renderSeparator = () => {
         return (
           <View
@@ -26,21 +26,21 @@ export default class GroupList extends Component {
         return (
             <View style={styles.wrapper}>
                 <View style={styles.title}>
-                    <Text>Список групп</Text>
+                    <Text>Список пользователей</Text>
                 </View>
                 <View style={styles.top}>
-                    <Text>Группа</Text>
-                    <Text>Тренер</Text>
+                    <Text>Пользователь</Text>
+                    <Text>Роль</Text>
                 </View>
                 <View>
                     <FlatList
-                    data={this.props.groupList}
+                    data={this.props.userList}
                     renderItem={({item}) => {
                     return (
                     <TouchableHighlight onPress={() => this.props.onTouch(item.id)}>
                         <View style={styles.container}>
-                            <Text>{item.groups_name}</Text>
-                            <Text>{item.users_name}</Text>
+                            <Text>{item.name}</Text>
+                            <Text>{item.role}</Text>
                         </View>
                     </TouchableHighlight>
                     );

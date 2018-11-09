@@ -15,8 +15,9 @@ import AddRecordForm from './Src/AddRecordForm.js';
 import AuthForm from './Src/AuthForm.js';
 import ServerApi from './Src/ServerAPI.js';
 import MainMenu from './Src/MainMenu.js';
-import HomePage from './Src/HomePage.js'
-import GroupList from './Src/GroupList.js'
+import HomePage from './Src/HomePage.js';
+import GroupList from './Src/GroupList.js';
+import UserList from './Src/UserList.js';
 //Import Constants
 import * as consts from './Src/const.js'
 
@@ -32,11 +33,12 @@ export default class App extends Component {
     //user options
     auth: 'Admin',
     role: 'none',
+    userList: [],
     tempAuth: {login: null, pass: null},
     //group options
     groupList: [],
     //navigation
-    loadScreen: 'home',
+    loadScreen: menu.button1,
     addRecord: 'none',
     loading: false,
     //data
@@ -48,7 +50,7 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    this.getData();
+    //this.getData();
   }
 
 //=====State fuctions=====
@@ -72,11 +74,16 @@ loginUser = async () => {
   }
 }
 
-//==Main menu actions==
+//=====Main menu actions=====
 
 onPressMenu = async (name) => {
-  if (name === menu.button2) {
-    await this.getGroupList();
+  switch(name) {
+    case(menu.button2):
+      await this.getGroupList();
+      break;
+    case(menu.button3):
+      await this.getUserList();
+      break;
   }
   this.setState({loadScreen: name});
 }
@@ -86,6 +93,17 @@ getGroupList = async () => {
   try {
     const groupList = await api.getGroupList();
     this.setState({loading: false, groupList: groupList});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+}
+
+getUserList = async () => {
+  this.setState({loading: true});
+  try {
+    const userList = await api.getUserList();
+    this.setState({loading: false, userList: userList});
   }
   catch(error) {
     this.setState({loading: false, error });
@@ -116,6 +134,10 @@ getGroupList = async () => {
       return(
         <GroupList groupList={this.state.groupList}/>
       );
+      case(menu.button3):
+      return(
+        <UserList userList={this.state.userList}/>
+      );
     }
   }
 
@@ -129,7 +151,7 @@ getGroupList = async () => {
       <View style={styles.overwrapper}>
         {this.renderScreen()}
         <Button
-          onPress={() => this.setState({auth: 'none', role: 'none'})}
+          onPress={() => this.setState({auth: 'none', role: 'none', loadScreen: menu.button1})}
           title="Выйти"
           />
         <MainMenu onPressMenu={this.onPressMenu}/>
@@ -143,7 +165,7 @@ getGroupList = async () => {
     this.setState({loading: true});
     try {
       const getData = await api.getData();
-      this.setState({data: getData, tempData: this.clearTmp(), addRecord: 'none', loadScreen: 'home'})
+      this.setState({data: getData, tempData: this.clearTmp(), addRecord: 'none', loadScreen: menu.button1})
     }
     catch(error) {
       this.setState({loading: false, error });

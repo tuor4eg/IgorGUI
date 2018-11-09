@@ -8,10 +8,11 @@
 
 const query = {
     user: {
-        authUser: '/login',
+        auth: '/users/login',
+        list: '/users/list'
     },
     group: {
-        getGroupList: '/groups'
+        list: '/groups/list'
     },
     getData: '/data',
     postData: '/data/post',
@@ -28,7 +29,7 @@ export default class ServerApi {
 //=====User's section=====
 
     async authUser(user) {
-        const res = await fetch(`${this.host}${query.user.authUser}`, {
+        const res = await fetch(`${this.host}${query.user.auth}`, {
             method: 'POST',
             headers: {
               'token': this.token,
@@ -41,10 +42,21 @@ export default class ServerApi {
         return response;
     }
 
+    async getUserList() {
+        const res = await fetch(`${this.host}${query.user.list}`, {
+            method: 'GET',
+            headers: {
+              'token': this.token,
+            },
+        });
+        const userList = await res.json();
+        return userList;
+    }
+
 //=====Group's section=====
 
     async getGroupList() {
-        const res = await fetch(`${this.host}${query.group.getGroupList}`, {
+        const res = await fetch(`${this.host}${query.group.list}`, {
             method: 'GET',
             headers: {
               'token': this.token,
