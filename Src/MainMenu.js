@@ -9,11 +9,15 @@
 import React, {Component} from 'react';
 import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight } from 'react-native';
 
+import * as consts from './const.js'
+
+const menu = consts.menuButtonsList;
+
 export default class MainMenu extends Component {
     render() {
         return (
             <View style={styles.container}>
-                <TouchableHighlight style={styles.button} onPress={() => this.props.onPressMenu('home')}>
+                <TouchableHighlight style={styles.button} onPress={() => this.props.onPressMenu(menu.button1)}>
                     <Text>Home</Text>
                 </TouchableHighlight>
                 <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu('groups')}>

@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight } from 'react-native';
+import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight, FlatList } from 'react-native';
 
 export default class GroupList extends Component {
     renderSeparator = () => {
@@ -24,23 +24,23 @@ export default class GroupList extends Component {
 
     render() {
         return (
-            <View>
-                <View>
-                    <Text>Group list</Text>
+            <View style={styles.wrapper}>
+                <View style={styles.title}>
+                    <Text>Список групп</Text>
                 </View>
-                <View>
-                    <Text>Group name</Text>
-                    <Text>Trainer</Text>
+                <View style={styles.top}>
+                    <Text>Группа</Text>
+                    <Text>Тренер</Text>
                 </View>
                 <View>
                     <FlatList
-                    groupList={this.props.groupList}
+                    data={this.props.groupList}
                     renderItem={({item}) => {
                     return (
                     <TouchableHighlight onPress={() => this.props.onTouch(item.id)}>
                         <View>
                             <Text>{item.name}</Text>
-                            <Text>{item.trainer}</Text>
+                            <Text>{item.trainerId}</Text>
                         </View>
                     </TouchableHighlight>
                     );
@@ -50,12 +50,22 @@ export default class GroupList extends Component {
                     />
                 </View>
             </View>
+        );
     }
 }
 
 const styles = StyleSheet.create({
     wrapper: {
+        flexDirection: 'column',
+        flex: 1
+    },
+    title: {
         flexDirection: 'row',
+        justifyContent: 'center'
+    },
+    top: {
+        flexDirection: 'row',
+        justifyContent: 'space-around'
     },
     container: {
         flex: 1,

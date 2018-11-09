@@ -8,6 +8,7 @@
 
 import React, {Component} from 'react';
 import {Button, StyleSheet, Text, View, Alert, ScrollView } from 'react-native';
+//Import Components
 import MainTable from './Src/MainTable.js';
 import EditForm from './Src/EditForm.js';
 import AddRecordForm from './Src/AddRecordForm.js';
@@ -15,9 +16,14 @@ import AuthForm from './Src/AuthForm.js';
 import ServerApi from './Src/ServerAPI.js';
 import MainMenu from './Src/MainMenu.js';
 import HomePage from './Src/HomePage.js'
+import GroupList from './Src/GroupList.js'
+//Import Constants
+import * as consts from './Src/const.js'
 
 const host = 'http://192.168.17.108:3000';
 const token = '123';
+
+const menu = consts.menuButtonsList;
 
 const api = new ServerApi(host, token);
 
@@ -28,7 +34,7 @@ export default class App extends Component {
     role: 'none',
     tempAuth: {login: null, pass: null},
     //group options
-    groups: [],
+    groupList: [],
     //navigation
     loadScreen: 'home',
     addRecord: 'none',
@@ -44,6 +50,94 @@ export default class App extends Component {
   componentDidMount() {
     this.getData();
   }
+
+//=====State fuctions=====
+
+//==User auth==
+
+onEnterAuth = (data, key) => {
+  const tempAuth = this.state.tempAuth;
+  tempAuth[key] = data;
+  this.setState({tempAuth});
+}
+
+loginUser = async () => {
+  this.setState({loading: true});
+  try {
+    const response = await api.authUser(this.state.tempAuth);
+    this.setState({loading: false, auth: response.name, role: response.role, tempAuth: {login: null, pass: null}});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+}
+
+//==Main menu actions==
+
+onPressMenu = async (name) => {
+  if (name === menu.button2) {
+    await this.getGroupList();
+  }
+  this.setState({loadScreen: name});
+}
+
+getGroupList = async () => {
+  this.setState({loading: true});
+  try {
+    const groupList = await api.getGroupList();
+    this.setState({loading: false, groupList: groupList});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+}
+
+//=====Secondary functions=====
+
+  getRecord = (id) => this.state.data.filter(item => item.id === id);
+
+  clearTmp = () => Object.keys(this.state.tempData).reduce((acc, element) => ({...acc, [element]: null}), {});
+
+//=====Render functions=====
+
+  renderAuthForm =() => {
+    return (
+      <AuthForm loginUser={this.loginUser} onEnterAuth={this.onEnterAuth}/>
+    );
+  }
+
+  renderScreen = () => {
+    switch(this.state.loadScreen) {
+      case(menu.button1):
+        return(
+          <HomePage />
+        );
+      case(menu.button2):
+      return(
+        <GroupList groupList={this.state.groupList}/>
+      );
+    }
+  }
+
+//==Main render==
+
+  render() {
+    if (this.state.auth === 'none') {
+      return(this.renderAuthForm());
+    }
+    return(
+      <View style={styles.overwrapper}>
+        {this.renderScreen()}
+        <Button
+          onPress={() => this.setState({auth: 'none', role: 'none'})}
+          title="Выйти"
+          />
+        <MainMenu onPressMenu={this.onPressMenu}/>
+      </View>
+      );
+  }
+
+//NADO VSE PEREPISAT!!!!!!
 
   async getData() {
     this.setState({loading: true});
@@ -116,72 +210,7 @@ export default class App extends Component {
     this.setState({ loadScreen: 'home', tempData: this.clearTmp()});
   }
 
-//NADO VSE PEREPISAT!!!!!!
 
-//=====State fuctions=====
-
-//==User auth==
-
-onEnterAuth = (data, key) => {
-  const tempAuth = this.state.tempAuth;
-  tempAuth[key] = data;
-  this.setState({tempAuth});
-}
-
-loginUser = async () => {
-  this.setState({loading: true});
-  try {
-    const response = await api.authUser(this.state.tempAuth);
-    this.setState({loading: false, auth: response.name, role: response.role, tempAuth: {login: null, pass: null}});
-  }
-  catch(error) {
-    this.setState({loading: false, error });
-  }
-}
-
-//==Main menu actions==
-
-onPressMenu = (name) => {
-  this.setState({loadScreen: name});
-}
-
-getGroupList = async () => {
-  this.setState({loading: true});
-  try {
-    const groupList = await api.getGroupList();
-    this.setState({groups: groupList});
-  }
-  catch(error) {
-    this.setState({loading: false, error });
-  }
-}
-
-//=====Secondary functions=====
-
-  getRecord = (id) => this.state.data.filter(item => item.id === id);
-
-  clearTmp = () => Object.keys(this.state.tempData).reduce((acc, element) => ({...acc, [element]: null}), {});
-
-//=====Render functions=====
-
-  renderAuthForm =() => {
-    return (
-      <AuthForm loginUser={this.loginUser} onEnterAuth={this.onEnterAuth}/>
-    );
-  }
-
-  renderHomePage = () => {
-    //testFunc();
-    return (
-      <HomePage />
-    );
-  }
-
-  renderGroupList = () => {
-    return (
-      <GroupList />
-    );
-  }
 
   renderAddForm = () => {
     return(
@@ -215,29 +244,6 @@ getGroupList = async () => {
       onChange={this.onChange}
       deleteRecord={this.deleteRecord}/>
     );
-  }
-
-  render() {
-    console.log(this.state.loadScreen);
-    if (this.state.auth === 'none') {
-      return(this.renderAuthForm());
-    }
-    if (this.state.addRecord === 'active') {
-      return(this.renderAddForm());
-    }
-    if (this.state.loadScreen != 'none') {
-      return(
-        <View style={styles.overwrapper}>
-          {this.renderHomePage()}
-          <Button
-            onPress={() => this.setState({auth: 'none', role: 'none'})}
-            title="Выйти"
-            />
-          <MainMenu onPressMenu={this.onPressMenu}/>
-        </View>
-        );
-    }
-    return(this.renderEditForm());
   }
 }
 
