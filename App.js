@@ -41,6 +41,7 @@ export default class App extends Component {
     loadScreen: menu.button1,
     addRecord: 'none',
     loading: false,
+    showModal: false,
     //data
     data: [],
     tempData: {id: null, name: null, sum: null, text: null},
@@ -110,6 +111,12 @@ getUserList = async () => {
   }
 }
 
+//=====Modal functions=====
+
+  onClickModal = () => {
+    this.setState({showModal: !this.state.showModal});
+  }
+
 //=====Secondary functions=====
 
   getRecord = (id) => this.state.data.filter(item => item.id === id);
@@ -132,7 +139,7 @@ getUserList = async () => {
         );
       case(menu.button2):
       return(
-        <GroupList groupList={this.state.groupList}/>
+        <GroupList groupList={this.state.groupList} onClickModal={this.onClickModal} display={this.state.showModal}/>
       );
       case(menu.button3):
       return(
@@ -158,6 +165,8 @@ getUserList = async () => {
       </View>
       );
   }
+
+
 
 //NADO VSE PEREPISAT!!!!!!
 

@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight, FlatList } from 'react-native';
+import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight, FlatList, Modal } from 'react-native';
 
 export default class GroupList extends Component {
     renderSeparator = () => {
@@ -37,7 +37,7 @@ export default class GroupList extends Component {
                     data={this.props.groupList}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => this.props.onTouch(item.id)}>
+                    <TouchableHighlight onPress={() => console.log(item.groups_id)}>
                         <View style={styles.container}>
                             <Text>{item.groups_name}</Text>
                             <Text>{item.users_name}</Text>
@@ -50,10 +50,28 @@ export default class GroupList extends Component {
                     />
                 </View>
                 <Button
-                onPress={() => console.log('1')}
+                onPress={() => this.props.onClickModal()}
                 title="Добавить"
                 />
+                <AddGroupModal display={this.props.display} onClickModal={this.props.onClickModal}
+                title="Добавить"/>
             </View>
+        );
+    }
+}
+
+class AddGroupModal extends Component {
+    render() {
+        return (
+        <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
+            <View style={styles.modalWrapper}>
+                <Text>Окно на реконструкции</Text>
+                <Button 
+                onPress={() => this.props.onClickModal()}
+                title="Отмена"
+                />
+            </View>
+        </Modal>
         );
     }
 }
@@ -79,5 +97,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: 'powderblue',
+    },
+    modalWrapper: {
+        flex: 0.25,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        backgroundColor: 'grey',
+        marginTop: 150
     }
 });
