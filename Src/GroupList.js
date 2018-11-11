@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight, FlatList, Modal } from 'react-native';
+import {Button, StyleSheet, Text, TextInput, View, Picker, ScrollView, TouchableHighlight, FlatList, Modal } from 'react-native';
 
 export default class GroupList extends Component {
     renderSeparator = () => {
@@ -62,10 +62,23 @@ export default class GroupList extends Component {
 
 class AddGroupModal extends Component {
     render() {
+        const list = ['Admin', 'User'];
+        const pick = list.map(item => <Picker.Item label={item} value={item} backgroundColor='pink'/>);
         return (
         <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
             <View style={styles.modalWrapper}>
-                <Text>Окно на реконструкции</Text>
+                <Text>Добавить группу</Text>
+                <Text>Название:</Text>
+                <TextInput placeholder='...' onChangeText={(text) => console.log(text)} />
+                <Text>Тренер:</Text>
+                <Picker
+                style={{ width: 200 }}
+                selectedValue='Admin'
+                onValueChange={(itemValue, itemIndex) => console.log(itemValue)}
+                keyExtractor={(item, index) => index.toString()}
+                >
+                {pick}
+                </Picker>
                 <Button 
                 onPress={() => this.props.onClickModal()}
                 title="Отмена"
@@ -99,12 +112,22 @@ const styles = StyleSheet.create({
         backgroundColor: 'powderblue',
     },
     modalWrapper: {
-        flex: 0.25,
+        flex: 0.5,
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
         borderWidth: 1,
-        backgroundColor: 'grey',
-        marginTop: 150
-    }
+        backgroundColor: 'skyblue',
+        marginTop: 150,
+        opacity: 1,
+        //width: 400,
+        //height: 400
+    },
+    itemStyle: {
+        fontSize: 15,
+        height: 75,
+        color: 'black',
+        textAlign: 'center',
+        fontWeight: 'bold'
+      }
 });
