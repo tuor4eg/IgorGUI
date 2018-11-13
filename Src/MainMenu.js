@@ -18,16 +18,16 @@ export default class MainMenu extends Component {
         return (
             <View style={styles.container}>
                 <TouchableHighlight style={styles.button} onPress={() => this.props.onPressMenu(menu.button1)}>
-                    <Text>Home</Text>
+                    <Text>{menu.button1}</Text>
                 </TouchableHighlight>
-                <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu('groups')}>
-                    <Text>Groups</Text>
+                <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu(menu.button2)}>
+                    <Text>{menu.button2}</Text>
                 </TouchableHighlight>
-                <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu('users')}>
-                    <Text>Users</Text>
+                <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu(menu.button3)}>
+                    <Text>{menu.button3}</Text>
                 </TouchableHighlight>
-                <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu('set')}>
-                    <Text>Set</Text>
+                <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu(menu.button4)}>
+                    <Text>{menu.button4}</Text>
                 </TouchableHighlight>
             </View>
         );

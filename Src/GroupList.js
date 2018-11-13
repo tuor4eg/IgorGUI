@@ -53,7 +53,13 @@ export default class GroupList extends Component {
                 onPress={() => this.props.onClickModal()}
                 title="Добавить"
                 />
-                <AddGroupModal display={this.props.display} onClickModal={this.props.onClickModal}
+                <AddGroupModal 
+                display={this.props.display} 
+                onClickModal={this.props.onClickModal} 
+                onEnterField={this.props.onEnterField} 
+                tmp={this.props.tmp}
+                userList={this.props.userList}
+                addGroup={this.props.addGroup}
                 title="Добавить"/>
             </View>
         );
@@ -61,24 +67,30 @@ export default class GroupList extends Component {
 }
 
 class AddGroupModal extends Component {
+    getTrainerId = (array, name) => array.filter(item => item.name === name);
+
     render() {
-        const list = ['Admin', 'User'];
-        const pick = list.map(item => <Picker.Item label={item} value={item} backgroundColor='pink'/>);
+        const userList = this.props.userList;
+        const pick = userList.map(item => <Picker.Item label={item.name} value={item.name} backgroundColor='pink' key={item.id.toString()}/>);
         return (
         <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
             <View style={styles.modalWrapper}>
                 <Text>Добавить группу</Text>
                 <Text>Название:</Text>
-                <TextInput placeholder='...' onChangeText={(text) => console.log(text)} />
+                <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'groupName')}/>
                 <Text>Тренер:</Text>
                 <Picker
                 style={{ width: 200 }}
-                selectedValue='Admin'
-                onValueChange={(itemValue, itemIndex) => console.log(itemValue)}
+                selectedValue={!this.props.tmp.groupTrainer ? 'Ololo' : this.props.tmp.groupTrainer.name}
+                onValueChange={(itemValue, itemIndex) => this.props.onEnterField(this.getTrainerId(userList, itemValue)[0], 'groupTrainer')}
                 keyExtractor={(item, index) => index.toString()}
                 >
                 {pick}
                 </Picker>
+                <Button 
+                onPress={() => this.props.addGroup()}
+                title="Сохранить"
+                />
                 <Button 
                 onPress={() => this.props.onClickModal()}
                 title="Отмена"

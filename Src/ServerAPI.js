@@ -12,7 +12,8 @@ const query = {
         list: '/users/list'
     },
     group: {
-        list: '/groups/list'
+        list: '/groups/list',
+        add: '/groups/add'
     },
     getData: '/data',
     postData: '/data/post',
@@ -64,6 +65,20 @@ export default class ServerApi {
         });
         const groupList = await res.json();
         return groupList;
+    }
+
+    async addGroup(data) {
+        const res = await fetch(`${this.host}${query.group.add}`, {
+            method: 'POST',
+            headers: {
+              'token': this.token,
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+           });
+        const answer = await res.text();
+        return answer;
     }
 
 //NADO VSE PEREPISAT!!!!!!!!!!!!!!!!!!!!!!

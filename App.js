@@ -32,7 +32,7 @@ export default class App extends Component {
   state = {
     //user options
     auth: 'Admin',
-    role: 'none',
+    role: 'admin',
     userList: [],
     tempAuth: {login: null, pass: null},
     //group options
@@ -45,6 +45,7 @@ export default class App extends Component {
     //data
     data: [],
     tempData: {id: null, name: null, sum: null, text: null},
+    tmp: {},
     trainer: 'В. Куролесов',
     //other
     error: null
@@ -55,6 +56,21 @@ export default class App extends Component {
   }
 
 //=====State fuctions=====
+
+onEnterField = (data, key) => {
+  const tmp = this.state.tmp;
+  if (tmp[key]) {
+    tmp[key] = data;
+    this.setState({tmp});
+    return;
+  }
+  const newTmp = {...tmp, [key]: data};
+  this.setState({tmp: newTmp});
+}
+
+onClickModal = () => {
+  this.setState({showModal: !this.state.showModal});
+}
 
 //==User auth==
 
@@ -75,18 +91,44 @@ loginUser = async () => {
   }
 }
 
+//==Adding group==
+
+addGroup = async () => {
+  const {groupName, groupTrainer} = this.state.tmp;
+  const trainerId = groupTrainer ? groupTrainer.id : this.state.userList[0].id;
+  if (!groupName) {
+    Alert.alert('Введите имя!');
+    return;
+  }
+  this.setState({loading: true});
+  try {
+    await api.addGroup({groupName, trainerId});
+    await this.getGroupList();
+    this.setState({loading: false});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}});
+  this.onClickModal();
+}
+
 //=====Main menu actions=====
 
 onPressMenu = async (name) => {
   switch(name) {
     case(menu.button2):
       await this.getGroupList();
+      await this.getUserList();
       break;
     case(menu.button3):
       await this.getUserList();
       break;
   }
   this.setState({loadScreen: name});
+  if (this.state.showModal) {
+    this.onClickModal();
+  }
 }
 
 getGroupList = async () => {
@@ -111,18 +153,6 @@ getUserList = async () => {
   }
 }
 
-//=====Modal functions=====
-
-  onClickModal = () => {
-    this.setState({showModal: !this.state.showModal});
-  }
-
-//=====Secondary functions=====
-
-  getRecord = (id) => this.state.data.filter(item => item.id === id);
-
-  clearTmp = () => Object.keys(this.state.tempData).reduce((acc, element) => ({...acc, [element]: null}), {});
-
 //=====Render functions=====
 
   renderAuthForm =() => {
@@ -139,7 +169,15 @@ getUserList = async () => {
         );
       case(menu.button2):
       return(
-        <GroupList groupList={this.state.groupList} onClickModal={this.onClickModal} display={this.state.showModal}/>
+        <GroupList 
+        groupList={this.state.groupList} 
+        onClickModal={this.onClickModal} 
+        display={this.state.showModal} 
+        onEnterField={this.onEnterField} 
+        tmp={this.state.tmp}
+        userList={this.state.userList}
+        getUserList={this.getUserList}
+        addGroup={this.addGroup}/>
       );
       case(menu.button3):
       return(
@@ -169,6 +207,11 @@ getUserList = async () => {
 
 
 //NADO VSE PEREPISAT!!!!!!
+
+
+  getRecord = (id) => this.state.data.filter(item => item.id === id);
+
+  clearTmp = () => Object.keys(this.state.tempData).reduce((acc, element) => ({...acc, [element]: null}), {});
 
   async getData() {
     this.setState({loading: true});

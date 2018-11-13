@@ -7,8 +7,8 @@
  */
 
  export const menuButtonsList = {
-     button1: 'home',
-     button2: 'groups',
-     button3: 'users',
-     button4: 'settings'
+     button1: 'Home',
+     button2: 'Groups',
+     button3: 'Users',
+     button4: 'Settings'
  }; 
