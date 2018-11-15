@@ -8,12 +8,12 @@
 
 const query = {
     user: {
-        auth: '/users/login',
-        list: '/users/list'
+        auth: '/user/auth',
+        list: '/user/list'
     },
     group: {
-        list: '/groups/list',
-        add: '/groups/add'
+        list: '/group/list',
+        add: '/group/add'
     },
     getData: '/data',
     postData: '/data/post',
@@ -56,6 +56,8 @@ export default class ServerApi {
 
 //=====Group's section=====
 
+//==Get list of groups==
+
     async getGroupList() {
         const res = await fetch(`${this.host}${query.group.list}`, {
             method: 'GET',
@@ -66,6 +68,8 @@ export default class ServerApi {
         const groupList = await res.json();
         return groupList;
     }
+
+//==Add group to database==
 
     async addGroup(data) {
         const res = await fetch(`${this.host}${query.group.add}`, {
@@ -79,6 +83,19 @@ export default class ServerApi {
            });
         const answer = await res.text();
         return answer;
+    }
+
+//==Show group's students==
+
+    async getStudentList(id) {
+        const res = await fetch(`${this.host}${query.group.list}/${id}`, {
+            method: 'GET',
+            headers: {
+              'token': this.token,
+            },
+        });
+        const studentList = await res.json();
+        return studentList;
     }
 
 //NADO VSE PEREPISAT!!!!!!!!!!!!!!!!!!!!!!

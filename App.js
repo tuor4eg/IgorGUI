@@ -18,8 +18,9 @@ import MainMenu from './Src/MainMenu.js';
 import HomePage from './Src/HomePage.js';
 import GroupList from './Src/GroupList.js';
 import UserList from './Src/UserList.js';
+import StudentList from './Src/StudentList.js';
 //Import Constants
-import * as consts from './Src/const.js'
+import * as consts from './Src/const.js';
 
 const host = 'http://192.168.17.108:3000';
 const token = '123';
@@ -37,6 +38,7 @@ export default class App extends Component {
     tempAuth: {login: null, pass: null},
     //group options
     groupList: [],
+    studentList: [],
     //navigation
     loadScreen: menu.button1,
     addRecord: 'none',
@@ -51,9 +53,9 @@ export default class App extends Component {
     error: null
   }
 
-  componentDidMount() {
-    //this.getData();
-  }
+  /*componentDidMount() {
+
+  }*/
 
 //=====State fuctions=====
 
@@ -113,6 +115,24 @@ addGroup = async () => {
   this.onClickModal();
 }
 
+//==Show group's students==
+
+getStudentList = async (id) => {
+  this.setState({loading: true});
+  try {
+    const studentList = await api.getStudentList(id);
+    this.setState({loading: false, studentList: studentList});
+  }
+  catch {
+    this.setState({loading: false, error });
+  }
+}
+
+onPressGroup = async (id) => {
+  await this.getStudentList(id);
+  this.setState({loadScreen: id});
+}
+
 //=====Main menu actions=====
 
 onPressMenu = async (name) => {
@@ -161,6 +181,15 @@ getUserList = async () => {
     );
   }
 
+  renderStudentList = (id) => {
+    return (
+      <StudentList
+      studentList={this.state.studentList}
+      id={id}
+      />
+    );
+  }
+
   renderScreen = () => {
     switch(this.state.loadScreen) {
       case(menu.button1):
@@ -177,12 +206,15 @@ getUserList = async () => {
         tmp={this.state.tmp}
         userList={this.state.userList}
         getUserList={this.getUserList}
-        addGroup={this.addGroup}/>
+        addGroup={this.addGroup}
+        onPressGroup={this.onPressGroup}/>
       );
       case(menu.button3):
       return(
         <UserList userList={this.state.userList}/>
       );
+      default:
+        return this.renderStudentList(this.state.loadScreen);
     }
   }
 

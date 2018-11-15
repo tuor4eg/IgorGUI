@@ -11,4 +11,4 @@
      button2: 'Groups',
      button3: 'Users',
      button4: 'Settings'
- }; 
+ };

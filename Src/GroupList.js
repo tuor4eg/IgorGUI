@@ -37,7 +37,7 @@ export default class GroupList extends Component {
                     data={this.props.groupList}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => console.log(item.groups_id)}>
+                    <TouchableHighlight onPress={() => this.props.onPressGroup(item.groups_id)}>
                         <View style={styles.container}>
                             <Text>{item.groups_name}</Text>
                             <Text>{item.users_name}</Text>
