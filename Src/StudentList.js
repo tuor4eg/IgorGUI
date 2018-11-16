@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight, FlatList } from 'react-native';
+import {Button, StyleSheet, Text, View, Modal, TextInput, TouchableHighlight, FlatList, KeyboardAvoidingView } from 'react-native';
 
 export default class StudentList extends Component {
     renderSeparator = () => {
@@ -25,6 +25,7 @@ export default class StudentList extends Component {
     render() {
         return (
             <View style={styles.wrapper}>
+            <KeyboardAvoidingView behavior='position' enabled>
                 <View style={styles.title}>
                     <Text>Участники группы</Text>
                 </View>
@@ -36,7 +37,7 @@ export default class StudentList extends Component {
                     data={this.props.studentList}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => console.log(item.id)}>
+                    <TouchableHighlight onPress={() => this.props.onPressStudent(item.id)}>
                         <View style={styles.container}>
                             <Text>{item.name}</Text>
                         </View>
@@ -47,10 +48,47 @@ export default class StudentList extends Component {
                     ItemSeparatorComponent={this.renderSeparator}
                     />
                 </View>
+                <Button
+                onPress={() => this.props.onClickModal()}
+                title="Добавить участника"
+                />
+                <AddStudentModal 
+                display={this.props.display} 
+                onClickModal={this.props.onClickModal} 
+                onEnterField={this.props.onEnterField} 
+                tmp={this.props.tmp}
+                addStudent={this.props.addStudent}
+                id={this.props.id}
+                title="Добавить участника"/>
+                </KeyboardAvoidingView>
             </View>
         );
     }
 }
+
+class AddStudentModal extends Component {
+    render() {
+        return (
+            <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
+                <View style={styles.modalWrapper}>
+                    <Text>Добавить участника</Text>
+                    <Text>ФИО:</Text>
+                    <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'studentName')}/>
+                    <Button 
+                    onPress={() => this.props.addStudent(this.props.id)}
+                    title="Сохранить"
+                    />
+                    <Button 
+                    onPress={() => this.props.onClickModal()}
+                    title="Отмена"
+                    />
+                </View>
+            </Modal>
+        );
+    }
+}
+
+
 
 const styles = StyleSheet.create({
     wrapper: {
@@ -75,7 +113,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'powderblue',
     },
     modalWrapper: {
-        flex: 0.5,
+        flex: 0.35,
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'center',

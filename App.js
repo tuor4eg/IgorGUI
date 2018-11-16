@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView } from 'react-native';
+import {Button, StyleSheet, Text, View, Alert, ScrollView  } from 'react-native';
 //Import Components
 import MainTable from './Src/MainTable.js';
 import EditForm from './Src/EditForm.js';
@@ -19,6 +19,7 @@ import HomePage from './Src/HomePage.js';
 import GroupList from './Src/GroupList.js';
 import UserList from './Src/UserList.js';
 import StudentList from './Src/StudentList.js';
+import StudentForm from './Src/StudentForm.js';
 //Import Constants
 import * as consts from './Src/const.js';
 
@@ -44,6 +45,7 @@ export default class App extends Component {
     addRecord: 'none',
     loading: false,
     showModal: false,
+    show2ndModal: false,
     //data
     data: [],
     tempData: {id: null, name: null, sum: null, text: null},
@@ -115,6 +117,25 @@ addGroup = async () => {
   this.onClickModal();
 }
 
+addStudent = async (id) => {
+  const {studentName} = this.state.tmp;
+  if (!studentName) {
+    Alert.alert('Введите имя!');
+    return;
+  }
+  this.setState({loading: true});
+  try {
+    await api.addStudent({id, studentName});
+    await this.getStudentList(id);
+    this.setState({loading: false})
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}});
+  this.onClickModal();
+}
+
 //==Show group's students==
 
 getStudentList = async (id) => {
@@ -131,6 +152,11 @@ getStudentList = async (id) => {
 onPressGroup = async (id) => {
   await this.getStudentList(id);
   this.setState({loadScreen: id});
+}
+
+onPressStudent = async (id) => {
+  await this.getGroupList();
+  this.setState({loadScreen: {'student': id}});
 }
 
 //=====Main menu actions=====
@@ -185,34 +211,48 @@ getUserList = async () => {
     return (
       <StudentList
       studentList={this.state.studentList}
+      onClickModal={this.onClickModal}
+      onEnterField={this.onEnterField}
+      tmp={this.state.tmp}
+      display={this.state.showModal}
       id={id}
+      addStudent={this.addStudent}
+      onPressStudent={this.onPressStudent}
       />
     );
   }
 
   renderScreen = () => {
+    if (this.state.loadScreen.student != undefined) {
+      console.log(this.state.loadScreen.student, 'lol');
+      return(
+        <StudentForm 
+        id={this.state.loadScreen.student}
+        groupList={this.state.groupList}/>
+      );
+    }
     switch(this.state.loadScreen) {
       case(menu.button1):
         return(
           <HomePage />
         );
       case(menu.button2):
-      return(
-        <GroupList 
-        groupList={this.state.groupList} 
-        onClickModal={this.onClickModal} 
-        display={this.state.showModal} 
-        onEnterField={this.onEnterField} 
-        tmp={this.state.tmp}
-        userList={this.state.userList}
-        getUserList={this.getUserList}
-        addGroup={this.addGroup}
-        onPressGroup={this.onPressGroup}/>
-      );
+        return(
+          <GroupList 
+          groupList={this.state.groupList} 
+          onClickModal={this.onClickModal} 
+          display={this.state.showModal} 
+          onEnterField={this.onEnterField} 
+          tmp={this.state.tmp}
+          userList={this.state.userList}
+          getUserList={this.getUserList}
+          addGroup={this.addGroup}
+          onPressGroup={this.onPressGroup}/>
+        );
       case(menu.button3):
-      return(
-        <UserList userList={this.state.userList}/>
-      );
+        return(
+          <UserList userList={this.state.userList}/>
+        );
       default:
         return this.renderStudentList(this.state.loadScreen);
     }

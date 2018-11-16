@@ -98,6 +98,22 @@ export default class ServerApi {
         return studentList;
     }
 
+//==Add student into group==
+
+async addStudent(data) {
+    const res = await fetch(`${this.host}${query.group.add}/${data.id}`, {
+        method: 'POST',
+        headers: {
+          'token': this.token,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+       });
+    const answer = await res.text();
+    return answer;
+}
+
 //NADO VSE PEREPISAT!!!!!!!!!!!!!!!!!!!!!!
 
     async getData() {
