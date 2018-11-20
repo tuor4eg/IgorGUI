@@ -12,7 +12,13 @@ import {Button, StyleSheet, Text, View, Modal, TextInput, TouchableHighlight, Fl
 export default class StudentForm extends Component {
     render () {
         const groupList = this.props.groupList;
-        //const pick = groupList.map(item => <Picker.Item label={item.name} value={item.name} backgroundColor='pink' key={item.id.toString()}/>);
+        const pick = groupList.map(item => <Picker.Item 
+            style={styles.container}
+            label={item.groups_name} 
+            value={item.groups_name} 
+            backgroundColor='pink' 
+            key={item.groups_id.toString()}/>);
+        console.log(pick);
         return(
         <View style={styles.wrapper}>
             <View style={styles.title}>
@@ -24,11 +30,12 @@ export default class StudentForm extends Component {
             </View>
             <View style={styles.container}>
                 <TextInput value='olol'
-                onChangeText={(text) => this.props.onEnterField(text, 'studentName')}/>
+                style={styles.container}
+                onChangeText={(text) => this.props.onEnterField(text, 'studentName')} />
                 <Picker
                 selectedValue='Ololo'
                 onValueChange={() => console.log(kek)}>
-                    
+                    {pick}
                 </Picker>
             </View>
             <Button 
@@ -55,7 +62,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'pink'
     },
     container: {
-        flex: 1,
+        //flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
