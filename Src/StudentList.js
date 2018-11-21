@@ -37,7 +37,7 @@ export default class StudentList extends Component {
                     data={this.props.studentList}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => this.props.onPressStudent(item.id, item.name)}>
+                    <TouchableHighlight onPress={() => this.props.onPressStudent(item.id, item.name, this.props.groupId)}>
                         <View style={styles.container}>
                             <Text>{item.name}</Text>
                         </View>
@@ -52,13 +52,17 @@ export default class StudentList extends Component {
                 onPress={() => this.props.onClickModal()}
                 title="Добавить участника"
                 />
+                <Button
+                onPress={() => this.props.onClickModal()}
+                title="Удалить группу"
+                />
                 <AddStudentModal 
                 display={this.props.display} 
                 onClickModal={this.props.onClickModal} 
                 onEnterField={this.props.onEnterField} 
                 tmp={this.props.tmp}
                 addStudent={this.props.addStudent}
-                id={this.props.id}
+                groupId={this.props.groupId}
                 title="Добавить участника"/>
                 </KeyboardAvoidingView>
             </View>
@@ -75,7 +79,7 @@ class AddStudentModal extends Component {
                     <Text>ФИО:</Text>
                     <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'studentName')}/>
                     <Button 
-                    onPress={() => this.props.addStudent(this.props.id)}
+                    onPress={() => this.props.addStudent(this.props.groupId)}
                     title="Сохранить"
                     />
                     <Button 

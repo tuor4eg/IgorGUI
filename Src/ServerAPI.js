@@ -15,6 +15,10 @@ const query = {
         list: '/group/list',
         add: '/group/add'
     },
+    student: {
+        add: '/student/add',
+        edit: '/student'
+    },
     getData: '/data',
     postData: '/data/post',
     patchData: '/data/patch/',
@@ -101,7 +105,7 @@ export default class ServerApi {
 //==Add student into group==
 
 async addStudent(data) {
-    const res = await fetch(`${this.host}${query.group.add}/${data.id}`, {
+    const res = await fetch(`${this.host}${query.student.add}/${data.id}`, {
         method: 'POST',
         headers: {
           'token': this.token,
@@ -109,6 +113,36 @@ async addStudent(data) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
+       });
+    const answer = await res.text();
+    return answer;
+}
+
+//==Edit student==
+
+async editStudent(data) {
+    const res = await fetch(`${this.host}${query.student.edit}/${data.id}`, {
+        method: 'POST',
+        headers: {
+          'token': this.token,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+       });
+    const answer = await res.text();
+    console.log(answer);
+    return answer;
+}
+
+//==Delete student==
+
+async deleteStudent(id) {
+    const res = await fetch(`${this.host}${query.student.edit}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'token': this.token
+        }
        });
     const answer = await res.text();
     return answer;

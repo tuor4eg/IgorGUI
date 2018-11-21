@@ -7,20 +7,28 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Modal, TextInput, TouchableHighlight, FlatList, Picker } from 'react-native';
+import {Button, StyleSheet, Text, View, Alert, TextInput, TouchableHighlight, FlatList, Picker } from 'react-native';
 
 export default class StudentForm extends Component {
+    askBeforeDelete = (id) => {
+        Alert.alert(
+          'Удалить участника',
+          'Точно удалить?',
+          [
+            {text: 'Да', onPress: () => this.props.deleteStudent(id)},
+            {text: 'Отмена'}
+          ]
+        )
+      }
+    
     render () {
         const groupList = this.props.groupList;
-        const getGroup = groupList.filter(item => item.groups_id === this.props.tmp.groupId)[0];
-        console.log(getGroup.groups_name);
         const pick = groupList.map(item => <Picker.Item 
             style={styles.container}
             label={item.groups_name} 
             value={item.groups_id} 
             backgroundColor='pink' 
             key={item.groups_id.toString()}/>);
-        console.log(this.props.tmp);
         return(
         <View style={styles.wrapper}>
             <View style={styles.title}>
@@ -36,7 +44,7 @@ export default class StudentForm extends Component {
                 onChangeText={(text) => this.props.onEnterField(text, 'studentName')} />
                 <Picker
                 style={{ width: 150 }}
-                selectedValue={getGroup.groups_name}
+                selectedValue={this.props.tmp.groupId}
                 onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'groupId')}>
                     {pick}
                 </Picker>
@@ -44,6 +52,9 @@ export default class StudentForm extends Component {
             <Button 
             onPress={() => this.props.editStudent(this.props.studentId)}
             title="Сохранить"/>
+            <Button 
+            onPress={() => this.askBeforeDelete(this.props.studentId)}
+            title="Удалить"/>
         </View>
         );
     }

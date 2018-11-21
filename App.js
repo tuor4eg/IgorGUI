@@ -117,6 +117,8 @@ addGroup = async () => {
   this.onClickModal();
 }
 
+//==Adding student==
+
 addStudent = async (id) => {
   const {studentName} = this.state.tmp;
   if (!studentName) {
@@ -136,14 +138,40 @@ addStudent = async (id) => {
   this.onClickModal();
 }
 
+//==Editing student==
+
 editStudent = async (id) => {
-  console.log(this.state.tmp);
-  //const {studentName} = this.state.tmp;
+  const {studentName, groupId} = this.state.tmp;
   if (!studentName) {
     Alert.alert('Введите имя!');
     return;
   }
-  //this.setState({loading: true});
+  this.setState({loading: true});
+  try {
+    await api.editStudent({id, studentName, groupId});
+    await api.getStudentList(groupId);
+    this.setState({loading: false})
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}, loadScreen: groupId});
+}
+
+//==Deleting student==
+
+deleteStudent = async (id) => {
+  const {groupId} = this.state.tmp;
+  this.setState({loading: true});
+  try {
+    await api.deleteStudent(id);
+    await api.getStudentList(groupId);
+    this.setState({loading: false})
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}, loadScreen: groupId});
 }
 
 //==Show group's students==
@@ -152,7 +180,8 @@ getStudentList = async (id) => {
   this.setState({loading: true});
   try {
     const studentList = await api.getStudentList(id);
-    this.setState({loading: false, studentList: studentList});
+    this.setState({loading: false, studentList});
+    console.log(this.state.studentList);
   }
   catch {
     this.setState({loading: false, error });
@@ -164,9 +193,9 @@ onPressGroup = async (id) => {
   this.setState({loadScreen: id});
 }
 
-onPressStudent = async (id, name) => {
+onPressStudent = async (id, name, groupId) => {
   await this.getGroupList();
-  this.setState({loadScreen: {'student': id}, tmp: {'studentName': name, 'groupId': id}});
+  this.setState({loadScreen: {'student': id}, tmp: {'studentName': name, 'groupId': groupId}});
 }
 
 //=====Main menu actions=====
@@ -235,8 +264,10 @@ getUserList = async () => {
     if (this.state.loadScreen.student != undefined) {
       return(
         <StudentForm
+        groupId={}
         studentId={this.state.loadScreen.student}
         editStudent={this.editStudent}
+        deleteStudent={this.deleteStudent}
         onEnterField={this.onEnterField}
         tmp={this.state.tmp}
         groupList={this.state.groupList}/>
