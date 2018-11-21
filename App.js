@@ -136,6 +136,16 @@ addStudent = async (id) => {
   this.onClickModal();
 }
 
+editStudent = async (id) => {
+  console.log(this.state.tmp);
+  //const {studentName} = this.state.tmp;
+  if (!studentName) {
+    Alert.alert('Введите имя!');
+    return;
+  }
+  //this.setState({loading: true});
+}
+
 //==Show group's students==
 
 getStudentList = async (id) => {
@@ -154,9 +164,9 @@ onPressGroup = async (id) => {
   this.setState({loadScreen: id});
 }
 
-onPressStudent = async (id) => {
+onPressStudent = async (id, name) => {
   await this.getGroupList();
-  this.setState({loadScreen: {'student': id}});
+  this.setState({loadScreen: {'student': id}, tmp: {'studentName': name, 'groupId': id}});
 }
 
 //=====Main menu actions=====
@@ -215,7 +225,6 @@ getUserList = async () => {
       onEnterField={this.onEnterField}
       tmp={this.state.tmp}
       display={this.state.showModal}
-      id={id}
       addStudent={this.addStudent}
       onPressStudent={this.onPressStudent}
       />
@@ -224,10 +233,12 @@ getUserList = async () => {
 
   renderScreen = () => {
     if (this.state.loadScreen.student != undefined) {
-      console.log(this.state.loadScreen.student, 'lol');
       return(
-        <StudentForm 
-        id={this.state.loadScreen.student}
+        <StudentForm
+        studentId={this.state.loadScreen.student}
+        editStudent={this.editStudent}
+        onEnterField={this.onEnterField}
+        tmp={this.state.tmp}
         groupList={this.state.groupList}/>
       );
     }

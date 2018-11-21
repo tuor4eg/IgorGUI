@@ -12,13 +12,15 @@ import {Button, StyleSheet, Text, View, Modal, TextInput, TouchableHighlight, Fl
 export default class StudentForm extends Component {
     render () {
         const groupList = this.props.groupList;
+        const getGroup = groupList.filter(item => item.groups_id === this.props.tmp.groupId)[0];
+        console.log(getGroup.groups_name);
         const pick = groupList.map(item => <Picker.Item 
             style={styles.container}
             label={item.groups_name} 
-            value={item.groups_name} 
+            value={item.groups_id} 
             backgroundColor='pink' 
             key={item.groups_id.toString()}/>);
-        console.log(pick);
+        console.log(this.props.tmp);
         return(
         <View style={styles.wrapper}>
             <View style={styles.title}>
@@ -29,17 +31,18 @@ export default class StudentForm extends Component {
                 <Text>Группа</Text>
             </View>
             <View style={styles.container}>
-                <TextInput value='olol'
+                <TextInput value={this.props.tmp.studentName}
                 style={styles.container}
                 onChangeText={(text) => this.props.onEnterField(text, 'studentName')} />
                 <Picker
-                selectedValue='Ololo'
-                onValueChange={() => console.log(kek)}>
+                style={{ width: 150 }}
+                selectedValue={getGroup.groups_name}
+                onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'groupId')}>
                     {pick}
                 </Picker>
             </View>
             <Button 
-            onPress={() => this.props.onClickModal()}
+            onPress={() => this.props.editStudent(this.props.studentId)}
             title="Сохранить"/>
         </View>
         );

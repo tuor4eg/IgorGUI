@@ -37,7 +37,7 @@ export default class StudentList extends Component {
                     data={this.props.studentList}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => this.props.onPressStudent(item.id)}>
+                    <TouchableHighlight onPress={() => this.props.onPressStudent(item.id, item.name)}>
                         <View style={styles.container}>
                             <Text>{item.name}</Text>
                         </View>
