@@ -20,6 +20,7 @@ import GroupList from './Src/GroupList.js';
 import UserList from './Src/UserList.js';
 import StudentList from './Src/StudentList.js';
 import StudentForm from './Src/StudentForm.js';
+import UserForm from './Src/UserForm.js';
 //Import Constants
 import * as consts from './Src/const.js';
 
@@ -45,7 +46,6 @@ export default class App extends Component {
     addRecord: 'none',
     loading: false,
     showModal: false,
-    show2ndModal: false,
     //data
     data: [],
     tempData: {id: null, name: null, sum: null, text: null},
@@ -93,6 +93,39 @@ loginUser = async () => {
   catch(error) {
     this.setState({loading: false, error });
   }
+}
+
+addUser = async() => {
+  const {userName, login, role, openPassword} = this.state.tmp;
+  if (!userName || !login || !openPassword) {
+    Alert.alert('Заполните данные!');
+    return;
+  }
+  this.setState({loading: true});
+  try {
+    await api.addUser({userName, login, role, openPassword});
+    await this.getUserList();
+    this.setState({loading: false});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}});
+  this.onClickModal();
+}
+
+editUser = async() => {
+  console.log('ok');
+}
+
+deleteUser = async(id) => {
+  console.log(id, 'kill it with fire');
+}
+
+onPressUser = async (id) => {
+    await this.getUserList();
+    const currentUser = this.state.userList.filter(item => item.id === id)[0];
+    this.setState({loadScreen: {'user': id}, tmp: currentUser});
 }
 
 //==Adding group==
@@ -146,16 +179,17 @@ editStudent = async (id) => {
     Alert.alert('Введите имя!');
     return;
   }
+  const currentGroup = this.state.studentList.filter(item => item.id === id)[0].groupId;
   this.setState({loading: true});
   try {
     await api.editStudent({id, studentName, groupId});
-    await api.getStudentList(groupId);
+    await this.getStudentList(currentGroup);
     this.setState({loading: false})
   }
   catch(error) {
     this.setState({loading: false, error });
   }
-  this.setState({tmp: {}, loadScreen: groupId});
+  this.setState({tmp: {}, loadScreen: currentGroup});
 }
 
 //==Deleting student==
@@ -165,7 +199,7 @@ deleteStudent = async (id) => {
   this.setState({loading: true});
   try {
     await api.deleteStudent(id);
-    await api.getStudentList(groupId);
+    await this.getStudentList(groupId);
     this.setState({loading: false})
   }
   catch(error) {
@@ -181,7 +215,6 @@ getStudentList = async (id) => {
   try {
     const studentList = await api.getStudentList(id);
     this.setState({loading: false, studentList});
-    console.log(this.state.studentList);
   }
   catch {
     this.setState({loading: false, error });
@@ -249,6 +282,7 @@ getUserList = async () => {
   renderStudentList = (id) => {
     return (
       <StudentList
+      groupId={id}
       studentList={this.state.studentList}
       onClickModal={this.onClickModal}
       onEnterField={this.onEnterField}
@@ -264,13 +298,22 @@ getUserList = async () => {
     if (this.state.loadScreen.student != undefined) {
       return(
         <StudentForm
-        groupId={}
         studentId={this.state.loadScreen.student}
         editStudent={this.editStudent}
         deleteStudent={this.deleteStudent}
         onEnterField={this.onEnterField}
         tmp={this.state.tmp}
         groupList={this.state.groupList}/>
+      );
+    }
+    if (this.state.loadScreen.user != undefined) {
+      return(
+        <UserForm 
+        tmp={this.state.tmp}
+        onEnterField={this.onEnterField}
+        editUser={this.editUser}
+        deleteUser={this.deleteUser}
+        />
       );
     }
     switch(this.state.loadScreen) {
@@ -293,7 +336,14 @@ getUserList = async () => {
         );
       case(menu.button3):
         return(
-          <UserList userList={this.state.userList}/>
+          <UserList
+          onEnterField={this.onEnterField}
+          display={this.state.showModal}
+          onClickModal={this.onClickModal}
+          tmp={this.state.tmp}
+          addUser={this.addUser}
+          userList={this.state.userList}
+          onPressUser={this.onPressUser}/>
         );
       default:
         return this.renderStudentList(this.state.loadScreen);

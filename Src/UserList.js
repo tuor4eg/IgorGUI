@@ -7,7 +7,9 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight, FlatList } from 'react-native';
+import {Button, StyleSheet, Text, View, TextInput, Modal, TouchableHighlight, FlatList, Picker } from 'react-native';
+
+import {userRoles} from './const.js';
 
 export default class UserList extends Component {
     renderSeparator = () => {
@@ -37,7 +39,7 @@ export default class UserList extends Component {
                     data={this.props.userList}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => this.props.onTouch(item.id)}>
+                    <TouchableHighlight onPress={() => this.props.onPressUser(item.id)}>
                         <View style={styles.container}>
                             <Text>{item.name}</Text>
                             <Text>{item.role}</Text>
@@ -50,10 +52,59 @@ export default class UserList extends Component {
                     />
                 </View>
                 <Button
-                onPress={() => console.log('1')}
+                onPress={() => this.props.onClickModal()}
                 title="Добавить"
                 />
+                <AddUserModal 
+                display={this.props.display} 
+                onClickModal={this.props.onClickModal} 
+                onEnterField={this.props.onEnterField} 
+                tmp={this.props.tmp}
+                addUser={this.props.addUser}
+                title="Добавить пользователя"/>
             </View>
+        );
+    }
+}
+
+class AddUserModal extends Component {
+    render() {
+        const pick = userRoles.roles.map((item, index) => <Picker.Item 
+            style={styles.container}
+            label={userRoles.roleLabels[index]} 
+            value={item} 
+            backgroundColor='pink' 
+            key={item.toString()}/>);
+        return (
+            <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
+                <View style={styles.modalWrapper}>
+                    <Text>Добавить пользователя</Text>
+                    <Text>Имя:</Text>
+                    <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'userName')}/>
+                    <Text>Роль:</Text>
+                    <Picker
+                    style={{ width: 150 }}
+                    selectedValue={this.props.tmp.role}
+                    onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'role')}>
+                    {pick}
+                    </Picker>
+                    <Text>Логин:</Text>
+                    <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'login')}/>
+                    <Text>Пароль:</Text>
+                    <TextInput 
+                    secureTextEntry={true} 
+                    placeholder='password' 
+                    onChangeText={(text) => this.props.onEnterField(text, 'openPassword')}/>
+                    <Button 
+                    onPress={() => this.props.addUser()}
+                    title="Сохранить"
+                    />
+                    <Button 
+                    onPress={() => this.props.onClickModal()}
+                    title="Отмена"
+                    />
+                </View>
+            </Modal>
         );
     }
 }
@@ -79,5 +130,22 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: 'powderblue',
-    }
+    },
+    modalWrapper: {
+        //flex: 0.35,
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderWidth: 1,
+        backgroundColor: 'skyblue',
+        marginTop: 150,
+        opacity: 1,
+    },
+    itemStyle: {
+        fontSize: 15,
+        height: 75,
+        color: 'black',
+        textAlign: 'center',
+        fontWeight: 'bold'
+      }
 });

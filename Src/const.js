@@ -12,3 +12,8 @@
      button3: 'Users',
      button4: 'Settings'
  };
+
+ export const userRoles = {
+    roles: ['admin', 'user'],
+    roleLabels: ['Администратор', 'Пользователь']
+ };

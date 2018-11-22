@@ -23,6 +23,7 @@ export default class StudentList extends Component {
       };
 
     render() {
+        console.log(this.props.studentList);
         return (
             <View style={styles.wrapper}>
             <KeyboardAvoidingView behavior='position' enabled>
