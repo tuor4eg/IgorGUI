@@ -76,7 +76,7 @@ export default class ServerApi {
 
     async editUser(data) {
         const res = await fetch(`${this.host}${query.user.edit}/${data.id}`, {
-            method: 'POST',
+            method: 'PATCH',
             headers: {
               'token': this.token,
               'Accept': 'application/json',
@@ -165,7 +165,7 @@ export default class ServerApi {
 
     async editStudent(data) {
         const res = await fetch(`${this.host}${query.student.edit}/${data.id}`, {
-            method: 'POST',
+            method: 'PATCH',
             headers: {
             'token': this.token,
             'Accept': 'application/json',

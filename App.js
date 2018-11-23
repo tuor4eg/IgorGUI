@@ -114,12 +114,50 @@ addUser = async() => {
   this.onClickModal();
 }
 
+checkForOnlyAdmin = () => this.state.userList.filter(item => item.id !== this.state.id && item.role === 'admin');
+
 editUser = async() => {
-  console.log('ok');
+  const {name, login, role, openPassword} = this.state.tmp;
+  if (!name || !login) {
+    Alert.alert('Заполните данные!');
+    return;
+  }
+  if ( openPassword === '') {
+    Alert.alert('Укажите пароль!');
+    return;
+  }
+  if (this.checkForOnlyAdmin().length === 0 && role != 'admin') {
+    Alert.alert('Должен остаться хотя бы один администратор!');
+    return;
+  }
+  this.setState({loading: true});
+  try {
+    await api.editUser(this.state.tmp);
+    await this.getUserList();
+    this.setState({loading: false});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}, loadScreen: menu.button3});
 }
 
 deleteUser = async(id) => {
-  console.log(id, 'kill it with fire');
+  console.log(this.checkForOnlyAdmin());
+  if (this.checkForOnlyAdmin().length === 0) {
+    Alert.alert('Нельзя удалить единственного администратора!');
+    return;
+  }
+  this.setState({loading: true});
+  try {
+    await api.deleteUser(id);
+    await this.getUserList();
+    this.setState({loading: false});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}, loadScreen: menu.button3});
 }
 
 onPressUser = async (id) => {
@@ -243,7 +281,7 @@ onPressMenu = async (name) => {
       await this.getUserList();
       break;
   }
-  this.setState({loadScreen: name});
+  this.setState({loadScreen: name, tmp: {}});
   if (this.state.showModal) {
     this.onClickModal();
   }

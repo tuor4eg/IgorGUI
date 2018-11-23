@@ -9,6 +9,8 @@
 import React, {Component} from 'react';
 import {Button, StyleSheet, Text, View, Alert, TextInput, TouchableHighlight, FlatList, Picker } from 'react-native';
 
+import {userRoles} from './const.js';
+
 export default class StudentForm extends Component {
     askBeforeDelete = (id) => {
         Alert.alert(
@@ -23,6 +25,13 @@ export default class StudentForm extends Component {
     
     render () {
         console.log(this.props.tmp);
+        const pick = userRoles.roles.map((item, index) => <Picker.Item 
+        style={styles.container}
+        label={userRoles.roleLabels[index]} 
+        value={item} 
+        backgroundColor='pink' 
+        key={item.toString()}/>);
+
         const {id, name, login, role} = this.props.tmp;
         return(
         <View style={styles.wrapper}>
@@ -51,17 +60,20 @@ export default class StudentForm extends Component {
                 <Text>Роль</Text>
             </View>
             <View style={styles.container}>
-                <TextInput 
-                value={role}
-                style={styles.container}
-                onChangeText={(text) => this.props.onEnterField(text, 'name')} />
+                    <Picker
+                    style={{ width: 250 }}
+                    selectedValue={this.props.tmp.role}
+                    onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'role')}>
+                    {pick}
+                    </Picker>
             </View>
             <View style={styles.top}>
                 <Text>Пароль</Text>
             </View>
             <View style={styles.container}>
                 <TextInput 
-                value='lol'
+                secureTextEntry={true} 
+                placeholder='********' 
                 style={styles.container}
                 onChangeText={(text) => this.props.onEnterField(text, 'openPassword')} />
             </View>

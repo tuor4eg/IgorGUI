@@ -12,6 +12,11 @@ import {Button, StyleSheet, Text, View, TextInput, Modal, TouchableHighlight, Fl
 import {userRoles} from './const.js';
 
 export default class UserList extends Component {
+    addUserWithDefaultRole = () => {
+        this.props.onEnterField('admin', 'role');
+        this.props.onClickModal();
+    }
+
     renderSeparator = () => {
         return (
           <View
@@ -52,7 +57,7 @@ export default class UserList extends Component {
                     />
                 </View>
                 <Button
-                onPress={() => this.props.onClickModal()}
+                onPress={() => this.addUserWithDefaultRole()}
                 title="Добавить"
                 />
                 <AddUserModal 
@@ -69,6 +74,7 @@ export default class UserList extends Component {
 
 class AddUserModal extends Component {
     render() {
+        console.log(this.props.tmp);
         const pick = userRoles.roles.map((item, index) => <Picker.Item 
             style={styles.container}
             label={userRoles.roleLabels[index]} 
