@@ -15,7 +15,8 @@ const query = {
     },
     group: {
         list: '/group/list',
-        add: '/group/add'
+        add: '/group/add',
+        edit: '/group'
     },
     student: {
         add: '/student/add',
@@ -45,7 +46,7 @@ export default class ServerApi {
             },
             body: JSON.stringify(user)
         });
-        const [response] = await res.json();
+        const response = await res.json();
         return response;
     }
 
@@ -126,6 +127,32 @@ export default class ServerApi {
             },
             body: JSON.stringify(data)
            });
+        const answer = await res.text();
+        return answer;
+    }
+
+    async editGroup(data) {
+        const res = await fetch(`${this.host}${query.group.edit}/${data.groupId}`, {
+            method: 'PATCH',
+            headers: {
+            'token': this.token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        const answer = await res.text();
+        return answer;
+    }
+
+
+    async deleteGroup(id) {
+        const res = await fetch(`${this.host}${query.group.edit}/${id}`, {
+            method: 'DELETE',
+            headers: {
+            'token': this.token
+            }
+        });
         const answer = await res.text();
         return answer;
     }

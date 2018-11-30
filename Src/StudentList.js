@@ -7,9 +7,20 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Modal, TextInput, TouchableHighlight, FlatList, KeyboardAvoidingView } from 'react-native';
+import {Button, StyleSheet, Text, View, Modal, TextInput, TouchableHighlight, FlatList, KeyboardAvoidingView, Alert } from 'react-native';
 
 export default class StudentList extends Component {
+    askBeforeDelete = (id) => {
+        Alert.alert(
+          'Удалить группу',
+          'Точно удалить?',
+          [
+            {text: 'Да', onPress: () => this.props.deleteGroup(id)},
+            {text: 'Отмена'}
+          ]
+        )
+      }
+
     renderSeparator = () => {
         return (
           <View
@@ -23,7 +34,6 @@ export default class StudentList extends Component {
       };
 
     render() {
-        console.log(this.props.studentList);
         return (
             <View style={styles.wrapper}>
             <KeyboardAvoidingView behavior='position' enabled>
@@ -54,7 +64,11 @@ export default class StudentList extends Component {
                 title="Добавить участника"
                 />
                 <Button
-                onPress={() => this.props.onClickModal()}
+                onPress={() => this.props.onPressEditGroup(this.props.groupId)}
+                title="Изменить группу"
+                />
+                <Button
+                onPress={() => this.askBeforeDelete(this.props.groupId)}
                 title="Удалить группу"
                 />
                 <AddStudentModal 

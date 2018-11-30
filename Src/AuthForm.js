@@ -19,11 +19,11 @@ export default class AuthForm extends Component {
                 </View>
                 <View style={styles.container}>
                     <Text>Имя пользователя:</Text>
-                    <TextInput placeholder='login' onChangeText={(text) => this.props.onEnterAuth(text, 'login')}/>
+                    <TextInput placeholder='login' onChangeText={(text) => this.props.onEnterField(text, 'login')}/>
                 </View>
                 <View style={styles.container}>
                     <Text>Пароль:</Text>
-                    <TextInput secureTextEntry={true} placeholder='password' onChangeText={(text) => this.props.onEnterAuth(text, 'pass')}/>
+                    <TextInput secureTextEntry={true} placeholder='password' onChangeText={(text) => this.props.onEnterField(text, 'pass')}/>
                 </View>
                 <Button
                 onPress={() => this.props.loginUser()}

@@ -51,7 +51,7 @@ export default class GroupList extends Component {
                 </View>
                 <Button
                 onPress={() => this.props.onClickModal()}
-                title="Добавить"
+                title="Добавить группу"
                 />
                 <AddGroupModal 
                 display={this.props.display} 
@@ -60,7 +60,7 @@ export default class GroupList extends Component {
                 tmp={this.props.tmp}
                 userList={this.props.userList}
                 addGroup={this.props.addGroup}
-                title="Добавить"/>
+                title="Добавить группу"/>
             </View>
         );
     }

@@ -7,20 +7,19 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView  } from 'react-native';
+import {Button, StyleSheet, View, Alert  } from 'react-native';
 //Import Components
-import MainTable from './Src/MainTable.js';
-import EditForm from './Src/EditForm.js';
-import AddRecordForm from './Src/AddRecordForm.js';
 import AuthForm from './Src/AuthForm.js';
 import ServerApi from './Src/ServerAPI.js';
 import MainMenu from './Src/MainMenu.js';
 import HomePage from './Src/HomePage.js';
 import GroupList from './Src/GroupList.js';
+import GroupForm from './Src/GroupForm.js';
 import UserList from './Src/UserList.js';
 import StudentList from './Src/StudentList.js';
 import StudentForm from './Src/StudentForm.js';
 import UserForm from './Src/UserForm.js';
+import SetupForm from './Src/SetupForm.js';
 //Import Constants
 import * as consts from './Src/const.js';
 
@@ -37,20 +36,16 @@ export default class App extends Component {
     auth: 'Admin',
     role: 'admin',
     userList: [],
-    tempAuth: {login: null, pass: null},
     //group options
     groupList: [],
     studentList: [],
     //navigation
     loadScreen: menu.button1,
-    addRecord: 'none',
     loading: false,
     showModal: false,
     //data
     data: [],
-    tempData: {id: null, name: null, sum: null, text: null},
     tmp: {},
-    trainer: 'В. Куролесов',
     //other
     error: null
   }
@@ -78,17 +73,15 @@ onClickModal = () => {
 
 //==User auth==
 
-onEnterAuth = (data, key) => {
-  const tempAuth = this.state.tempAuth;
-  tempAuth[key] = data;
-  this.setState({tempAuth});
-}
-
 loginUser = async () => {
   this.setState({loading: true});
   try {
-    const response = await api.authUser(this.state.tempAuth);
-    this.setState({loading: false, auth: response.name, role: response.role, tempAuth: {login: null, pass: null}});
+    const response = await api.authUser(this.state.tmp);
+    if (response.length === 0) {
+      Alert.alert('Неверное имя пользователя или пароль!');
+    return;
+    }
+    this.setState({loading: false, auth: response.name, role: response.role, tmp: {}});
   }
   catch(error) {
     this.setState({loading: false, error });
@@ -99,6 +92,11 @@ addUser = async() => {
   const {userName, login, role, openPassword} = this.state.tmp;
   if (!userName || !login || !openPassword) {
     Alert.alert('Заполните данные!');
+    return;
+  }
+  const checkUniqueLogin = this.state.userList.filter(item.login === login);
+  if (checkUniqueLogin.length !== 0) {
+    Alert.alert('Такой пользователь существует!');
     return;
   }
   this.setState({loading: true});
@@ -143,7 +141,6 @@ editUser = async() => {
 }
 
 deleteUser = async(id) => {
-  console.log(this.checkForOnlyAdmin());
   if (this.checkForOnlyAdmin().length === 0) {
     Alert.alert('Нельзя удалить единственного администратора!');
     return;
@@ -165,6 +162,8 @@ onPressUser = async (id) => {
     const currentUser = this.state.userList.filter(item => item.id === id)[0];
     this.setState({loadScreen: {'user': id}, tmp: currentUser});
 }
+
+//=====Group section=====
 
 //==Adding group==
 
@@ -259,9 +258,54 @@ getStudentList = async (id) => {
   }
 }
 
+//==Delete group==
+
+deleteGroup = async (id) => {
+  this.setState({loading: true});
+  await this.getStudentList(id);
+  const checkForStudents = this.state.studentList.filter(item => item.groupId === id);
+  if (checkForStudents.length !== 0) {
+    Alert.alert('В группе есть пользователи!');
+    return;
+  }
+  try {
+    await api.deleteGroup(id);
+    await this.getGroupList();
+    this.setState({loading: false})
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}, loadScreen: menu.button2});
+}
+
+editGroup = async () => {
+  const {groupId, groupName, trainerId} = this.state.tmp;
+  if (!groupName) {
+    Alert.alert('Введите имя!');
+    return;
+  }
+  this.setState({loading: true});
+  try {
+    await api.editGroup({groupId, groupName, trainerId});
+    await this.getStudentList(groupId);
+    this.setState({loading: false})
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}, loadScreen: groupId});
+}
+
 onPressGroup = async (id) => {
   await this.getStudentList(id);
   this.setState({loadScreen: id});
+}
+
+onPressEditGroup = async (id) => {
+  await this.getUserList();
+  const [getGroup] = this.state.groupList.filter(item => item.groups_id === id);
+  this.setState({loadScreen: {'group': id}, tmp: {'groupId': id, 'groupName': getGroup.groups_name, 'trainerId': getGroup.users_id}})
 }
 
 onPressStudent = async (id, name, groupId) => {
@@ -313,13 +357,15 @@ getUserList = async () => {
 
   renderAuthForm =() => {
     return (
-      <AuthForm loginUser={this.loginUser} onEnterAuth={this.onEnterAuth}/>
+      <AuthForm loginUser={this.loginUser} onEnterField={this.onEnterField}/>
     );
   }
 
   renderStudentList = (id) => {
     return (
       <StudentList
+      deleteGroup={this.deleteGroup}
+      onPressEditGroup={this.onPressEditGroup}
       groupId={id}
       studentList={this.state.studentList}
       onClickModal={this.onClickModal}
@@ -332,27 +378,76 @@ getUserList = async () => {
     );
   }
 
+  renderGroupList = () => {
+    return(
+      <GroupList 
+      groupList={this.state.groupList} 
+      onClickModal={this.onClickModal} 
+      display={this.state.showModal} 
+      onEnterField={this.onEnterField} 
+      tmp={this.state.tmp}
+      userList={this.state.userList}
+      getUserList={this.getUserList}
+      addGroup={this.addGroup}
+      onPressGroup={this.onPressGroup}/>
+    );
+  }
+
+  renderGroupForm = () => {
+   return (
+    <GroupForm
+    editGroup={this.editGroup}
+    tmp={this.state.tmp}
+    onEnterField={this.onEnterField}
+    userList={this.state.userList}/>
+   );
+ }
+  renderStudentForm = () => {
+    return(
+      <StudentForm
+      studentId={this.state.loadScreen.student}
+      editStudent={this.editStudent}
+      deleteStudent={this.deleteStudent}
+      onEnterField={this.onEnterField}
+      tmp={this.state.tmp}
+      groupList={this.state.groupList}/>
+    );
+  }
+
+  renderUserForm = () => {
+    return(
+      <UserForm 
+      tmp={this.state.tmp}
+      onEnterField={this.onEnterField}
+      editUser={this.editUser}
+      deleteUser={this.deleteUser}
+      />
+    );
+  }
+
+  renderUserList = () => {
+    return(
+      <UserList
+      onEnterField={this.onEnterField}
+      display={this.state.showModal}
+      onClickModal={this.onClickModal}
+      tmp={this.state.tmp}
+      addUser={this.addUser}
+      userList={this.state.userList}
+      onPressUser={this.onPressUser}/>
+    );
+  }
+
   renderScreen = () => {
+    //shitcode need to rewrite ABSOLUTELY!
     if (this.state.loadScreen.student != undefined) {
-      return(
-        <StudentForm
-        studentId={this.state.loadScreen.student}
-        editStudent={this.editStudent}
-        deleteStudent={this.deleteStudent}
-        onEnterField={this.onEnterField}
-        tmp={this.state.tmp}
-        groupList={this.state.groupList}/>
-      );
+      return this.renderStudentForm();
     }
     if (this.state.loadScreen.user != undefined) {
-      return(
-        <UserForm 
-        tmp={this.state.tmp}
-        onEnterField={this.onEnterField}
-        editUser={this.editUser}
-        deleteUser={this.deleteUser}
-        />
-      );
+      return this.renderUserForm();
+    }
+    if (this.state.loadScreen.group != undefined) {
+      return this.renderGroupForm();
     }
     switch(this.state.loadScreen) {
       case(menu.button1):
@@ -360,29 +455,13 @@ getUserList = async () => {
           <HomePage />
         );
       case(menu.button2):
-        return(
-          <GroupList 
-          groupList={this.state.groupList} 
-          onClickModal={this.onClickModal} 
-          display={this.state.showModal} 
-          onEnterField={this.onEnterField} 
-          tmp={this.state.tmp}
-          userList={this.state.userList}
-          getUserList={this.getUserList}
-          addGroup={this.addGroup}
-          onPressGroup={this.onPressGroup}/>
-        );
+        return this.renderGroupList();
       case(menu.button3):
-        return(
-          <UserList
-          onEnterField={this.onEnterField}
-          display={this.state.showModal}
-          onClickModal={this.onClickModal}
-          tmp={this.state.tmp}
-          addUser={this.addUser}
-          userList={this.state.userList}
-          onPressUser={this.onPressUser}/>
-        );
+        return this.renderUserList();
+      case(menu.button4):
+          return(
+            <SetupForm />
+          );
       default:
         return this.renderStudentList(this.state.loadScreen);
     }
@@ -404,122 +483,6 @@ getUserList = async () => {
         <MainMenu onPressMenu={this.onPressMenu}/>
       </View>
       );
-  }
-
-
-
-//NADO VSE PEREPISAT!!!!!!
-
-
-  getRecord = (id) => this.state.data.filter(item => item.id === id);
-
-  clearTmp = () => Object.keys(this.state.tempData).reduce((acc, element) => ({...acc, [element]: null}), {});
-
-  async getData() {
-    this.setState({loading: true});
-    try {
-      const getData = await api.getData();
-      this.setState({data: getData, tempData: this.clearTmp(), addRecord: 'none', loadScreen: menu.button1})
-    }
-    catch(error) {
-      this.setState({loading: false, error });
-    }
- }
-
-  onTouch = (id) => {
-    const [data] = this.getRecord(id);
-    this.setState({ loadScreen: id, tempData: data });
-  }
-
-  onChange = (data, key) => {
-    const tempData = this.state.tempData;
-    tempData[key] = data
-    this.setState({tempData});
-  }
-
-  editRecord = async (check) => {
-    const temp = this.state.tempData;
-    if (check) {
-      this.setState({loading: true});
-      try {
-        await api.patchData(temp);
-        await this.getData();
-        this.setState({loading: false});
-      }
-      catch(error) {
-        this.setState({loading: false, error });
-      }
-    }
-    this.setState({ loadScreen: 'home', tempData: this.clearTmp()});
-  }
-
-  addRecord = async (check) => {
-    const {name, sum, text} = this.state.tempData;
-    if (check) {
-      if (!name) {
-        Alert.alert('Введите имя!');
-        return;
-      }
-      this.setState({loading: true});
-      try {
-        await api.postData({name, sum, text});
-        await this.getData();
-        this.setState({loading: false});
-      }
-      catch(error) {
-        this.setState({loading: false, error });
-      }
-    }
-    this.setState({tempData: this.clearTmp(), addRecord: 'none'});
-  }
-
-  deleteRecord = async (id) => {
-    this.setState({loading: true});
-    try {
-      await api.deleteData(id);
-      await this.getData();
-      this.setState({loading: false});
-    }
-    catch(error) {
-      this.setState({loading: false, error });
-    }
-    this.setState({ loadScreen: 'home', tempData: this.clearTmp()});
-  }
-
-
-
-  renderAddForm = () => {
-    return(
-      <AddRecordForm temp={this.state.tempData} onChange={this.onChange} addRecord = {this.addRecord}/>
-    );
-
-  };
-
-  renderMainTable = () => {
-    return (
-       <ScrollView style={styles.wrapper} keyboardShouldPersistTaps='never'>
-          <MainTable data={this.state.data} onTouch={this.onTouch} trainer={this.state.trainer}/>
-          <Button
-            onPress={() => this.setState({addRecord: 'active'})}
-            title="Добавить запись"
-            />
-          <Button
-            onPress={() => this.setState({auth: 'none', role: 'none'})}
-            title="Выйти"
-            />
-          <Text>Вы авторизованы под {this.state.auth}</Text>
-        </ScrollView>
-    );
-  };
-
-  renderEditForm = () => {
-    return (
-      <EditForm 
-      editRecord={this.editRecord} 
-      temp={this.state.tempData}
-      onChange={this.onChange}
-      deleteRecord={this.deleteRecord}/>
-    );
   }
 }
 
