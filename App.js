@@ -20,6 +20,7 @@ import StudentList from './Src/StudentList.js';
 import StudentForm from './Src/StudentForm.js';
 import UserForm from './Src/UserForm.js';
 import SetupForm from './Src/SetupForm.js';
+import TrainingForm from './Src/TrainingForm.js';
 //Import Constants
 import * as consts from './Src/const.js';
 
@@ -39,6 +40,8 @@ export default class App extends Component {
     //group options
     groupList: [],
     studentList: [],
+    //training options
+    trainingList: [],
     //navigation
     loadScreen: menu.button1,
     loading: false,
@@ -50,9 +53,9 @@ export default class App extends Component {
     error: null
   }
 
-  /*componentDidMount() {
-
-  }*/
+  componentDidMount() {
+    this.getTrainingList(new Date());
+  }
 
 //=====State fuctions=====
 
@@ -289,13 +292,50 @@ editGroup = async () => {
   try {
     await api.editGroup({groupId, groupName, trainerId});
     await this.getStudentList(groupId);
-    this.setState({loading: false})
+    this.setState({loading: false});
   }
   catch(error) {
     this.setState({loading: false, error });
   }
   this.setState({tmp: {}, loadScreen: groupId});
 }
+
+//=====Training section=====
+
+getTrainingList = async(date) => {
+  this.setState({loading: true});
+  try {
+    const trainingList = await api.getTrainingList(date);
+    this.setState({loading: false, trainingList});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+}
+
+addTraining =  async() => {
+  const today = new Date();
+  const tmp = this.state.tmp;
+  const {groupId, trainerId, date, time} = tmp;
+  const getTrainerId = trainerId ? trainerId : this.state.userList[0].id;
+  const getGroupId = groupId ? groupId : this.state.groupList[0].groups_id;
+  const getDate = date ? date : `${today.getFullYear()}.${today.getMonth()}.${today.getDate()}`;
+  const getTime = time ? time : `${today.getHours()}:${today.getMinutes()}:00`
+  this.setState({loading: true});
+  try {
+    await api.addTraining({'trainerId': getTrainerId, 'groupId': getGroupId, 'date': getDate, 'time': getTime});
+    await this.getTrainingList(today);
+    console.log('222');
+    this.setState({loading: false});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({tmp: {}});
+  this.onClickModal();
+}
+
+//=====Pressing section=====
 
 onPressGroup = async (id) => {
   await this.getStudentList(id);
@@ -311,6 +351,22 @@ onPressEditGroup = async (id) => {
 onPressStudent = async (id, name, groupId) => {
   await this.getGroupList();
   this.setState({loadScreen: {'student': id}, tmp: {'studentName': name, 'groupId': groupId}});
+}
+
+onPressTraining = async (id) => {
+  const [getTraining] = this.state.trainingList.filter(item => item.training_id === id);
+  const {training_date, group_name, trainer_id, trainer_name, groups_id} = getTraining;
+  const getDate = new Date(training_date);
+  await this.getStudentList(groups_id);
+  await this.getUserList();
+  this.setState({loadScreen: {'training': id}, tmp: {
+    'groupId': groups_id, 
+    'trainerId': trainer_id, 
+    'trainerName': trainer_name, 
+    'groupName': group_name,
+    'date': `${getDate.getDate()}.${getDate.getMonth()}.${getDate.getFullYear()}`,
+    'time': `${getDate.getHours()}:${getDate.getMinutes()}`
+  }});
 }
 
 //=====Main menu actions=====
@@ -438,22 +494,50 @@ getUserList = async () => {
     );
   }
 
+  renderHomePage = () => {
+    return (
+      <HomePage
+      display={this.state.showModal}
+      onClickModal={this.onClickModal}
+      trainingList={this.state.trainingList}
+      tmp={this.state.tmp}
+      onEnterField={this.onEnterField}
+      userList={this.state.userList}
+      groupList={this.state.groupList}
+      getGroupList={this.getGroupList}
+      getUserList={this.getUserList}
+      addTraining={this.addTraining}
+      onPressTraining={this.onPressTraining}/>
+    );
+  }
+
+  renderTrainingForm = () => {
+    return (
+      <TrainingForm
+      onEnterField={this.onEnterField}
+      userList={this.state.userList}
+      studentList={this.state.studentList}
+      tmp={this.state.tmp}/>
+    );
+  }
+
   renderScreen = () => {
     //shitcode need to rewrite ABSOLUTELY!
-    if (this.state.loadScreen.student != undefined) {
+    if (this.state.loadScreen.student) {
       return this.renderStudentForm();
     }
-    if (this.state.loadScreen.user != undefined) {
+    if (this.state.loadScreen.user) {
       return this.renderUserForm();
     }
-    if (this.state.loadScreen.group != undefined) {
+    if (this.state.loadScreen.group) {
       return this.renderGroupForm();
+    }
+    if (this.state.loadScreen.training) {
+      return this.renderTrainingForm();
     }
     switch(this.state.loadScreen) {
       case(menu.button1):
-        return(
-          <HomePage />
-        );
+        return this.renderHomePage();
       case(menu.button2):
         return this.renderGroupList();
       case(menu.button3):

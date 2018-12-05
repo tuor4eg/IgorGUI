@@ -22,10 +22,10 @@ const query = {
         add: '/student/add',
         edit: '/student'
     },
-    getData: '/data',
-    postData: '/data/post',
-    patchData: '/data/patch/',
-    deleteData: '/data/delete/'
+    training: {
+        list: '/training/list',
+        add: '/training/add'
+    }
 }
 
 export default class ServerApi {
@@ -217,55 +217,31 @@ export default class ServerApi {
         return answer;
     }
 
-//NADO VSE PEREPISAT!!!!!!!!!!!!!!!!!!!!!!
+//=====Training sectios=====
 
-    async getData() {
-        const res = await fetch(`${this.host}${query.getData}`, {
+    async getTrainingList(date) {
+        const res = await fetch(`${this.host}${query.training.list}`, {
             method: 'GET',
             headers: {
-              'token': this.token
-            }
-          });
-        const getData = await res.json();
-        return getData;
+                'token': this.token,
+            },
+        });
+        const trainingList = await res.json();
+        return trainingList;
     }
 
-    async postData(data) {
-        const res = await fetch(`${this.host}${query.postData}`, {
+    async addTraining(data) {
+        const res = await fetch(`${this.host}${query.training.add}`, {
             method: 'POST',
             headers: {
-              'token': this.token,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
+            'token': this.token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
-           });
+        });
         const answer = await res.text();
         return answer;
     }
 
-    async patchData(data) {
-        const res = await fetch(`${this.host}${query.patchData}${data.id}`, {
-            method: 'PATCH',
-            headers: {
-              'token': this.token,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-           });
-        const answer = await res.text();
-        return answer;
-    }
-
-    async deleteData(id) {
-        const res = await fetch(`${this.host}${query.deleteData}${id}`, {
-            method: 'DELETE',
-            headers: {
-              'token': this.token
-            }
-           });
-        const answer = await res.text();
-        return answer;
-    }
 }
