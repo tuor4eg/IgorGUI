@@ -36,8 +36,8 @@ export default class UserList extends Component {
                     <Text>Список пользователей</Text>
                 </View>
                 <View style={styles.top}>
-                    <Text>Пользователь</Text>
-                    <Text>Роль</Text>
+                    <View style={styles.cell}><Text>Пользователь</Text></View>
+                    <View style={styles.cell}><Text>Роль</Text></View>
                 </View>
                 <View>
                     <FlatList
@@ -46,8 +46,8 @@ export default class UserList extends Component {
                     return (
                     <TouchableHighlight onPress={() => this.props.onPressUser(item.id)}>
                         <View style={styles.container}>
-                            <Text>{item.name}</Text>
-                            <Text>{item.role}</Text>
+                        <View style={styles.cell}><Text>{item.name}</Text></View>
+                        <View style={styles.cell}><Text>{item.role}</Text></View>
                         </View>
                     </TouchableHighlight>
                     );
@@ -74,7 +74,6 @@ export default class UserList extends Component {
 
 class AddUserModal extends Component {
     render() {
-        console.log(this.props.tmp);
         const pick = userRoles.roles.map((item, index) => <Picker.Item 
             style={styles.container}
             label={userRoles.roleLabels[index]} 
@@ -136,6 +135,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: 'powderblue',
+    },
+    cell: {
+        flex: 0.33,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     modalWrapper: {
         //flex: 0.35,

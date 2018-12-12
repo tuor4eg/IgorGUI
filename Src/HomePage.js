@@ -10,6 +10,8 @@ import React, {Component} from 'react';
 import {Button, StyleSheet, Text, View, DatePickerAndroid, FlatList, TouchableHighlight, TimePickerAndroid, Modal, Picker } from 'react-native';
 
 export default class HomePage extends Component {
+    map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
+
     renderSeparator = () => {
         return (
           <View
@@ -22,10 +24,7 @@ export default class HomePage extends Component {
         );
     };
 
-    getFormatDate = (date) => {
-        const getDate = new Date(date);
-        return `${getDate.getHours()}:${getDate.getMinutes()}`
-    }
+    getFormatDate = (date) => `${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
 
     getDataFromServer = async () => {
         await this.props.getUserList();
@@ -35,16 +34,16 @@ export default class HomePage extends Component {
 
     render() {
         const today = new Date();
-        const formatDateToday = `${today.getDate()}.${today.getMonth()}.${today.getFullYear()}`;
+        const formatDateToday = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
         return (
             <View style={styles.wrapper}>
                 <View style={styles.title}>
                     <Text>Расписание занятий на {formatDateToday}</Text>
                 </View>
                 <View style={styles.top}>
-                    <Text>Дата</Text>
-                    <Text>Группа</Text>
-                    <Text>Тренер</Text>
+                    <View style={styles.cell}><Text>Дата</Text></View>
+                    <View style={styles.cell}><Text>Группа</Text></View>
+                    <View style={styles.cell}><Text>Тренер</Text></View>
                 </View>
                 <View>
                     <FlatList
@@ -53,9 +52,9 @@ export default class HomePage extends Component {
                     return (
                     <TouchableHighlight onPress={() => this.props.onPressTraining(item.training_id)}>
                         <View style={styles.container}>
-                            <Text>{this.getFormatDate(item.training_date)}</Text>
-                            <Text>{item.group_name}</Text>
-                            <Text>{item.trainer_name}</Text>
+                            <View style={styles.cell}><Text>{this.getFormatDate(item.training_date)}</Text></View>
+                            <View style={styles.cell}><Text style={styles.cell}>{item.group_name}</Text></View>
+                            <View style={styles.cell}><Text style={styles.cell}>{item.trainer_name}</Text></View>
                         </View>
                     </TouchableHighlight>
                     );
@@ -83,22 +82,23 @@ export default class HomePage extends Component {
 }
 
 class AddTrainingModal extends Component {
+    map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
+
     showAndroidDatePicker = async () => {
         try {
             const {action, year, month, day} = await DatePickerAndroid.open({
                 date: new Date()
             });
             if (action !== DatePickerAndroid.dismissedAction) {
-                var date = `${day}.${month}.${year}`;
-                this.props.onEnterField(date, 'date');
-                this.showAndroidTimePicker();
+                const date = new Date(year, month, day);
+                this.showAndroidTimePicker(date);
             }
         } catch ({code, message}) {
             console.warn('Cannot open date picker', message);
         }
     };
 
-    showAndroidTimePicker = async () => {
+    showAndroidTimePicker = async (date) => {
         const today = new Date();
         try {
             const {action, hour, minute} = await TimePickerAndroid.open({
@@ -107,8 +107,8 @@ class AddTrainingModal extends Component {
               is24Hour: true,
             });
             if (action !== TimePickerAndroid.dismissedAction) {
-                const time = `${hour}:${minute}`;
-                this.props.onEnterField(time, 'time');
+                const dateWithTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute);
+                this.props.onEnterField(dateWithTime, 'date');
             }
           } catch ({code, message}) {
             console.warn('Cannot open time picker', message);
@@ -117,13 +117,11 @@ class AddTrainingModal extends Component {
 
     formatDateAndTime = () => {
         const date = this.props.tmp.date;
-        const time = this.props.tmp.time;
         const today = new Date();
-        const formatDateToday = `${today.getDate()}.${today.getMonth()}.${today.getFullYear()}`;
-        const formatTimeToday = `${today.getHours()}:${today.getMinutes()}`;
-
-        if (date && time) {
-            return `${date} ${time}`;
+        const formatDateToday = `${this.map(today.getDate())}.${this.map(today.getMonth())}.${today.getFullYear()}`;
+        const formatTimeToday = `${this.map(today.getHours())}:${this.map(today.getMinutes())}`;
+        if (date) {
+            return `${this.map(date.getDate())}.${this.map(date.getMonth())}.${this.map(date.getFullYear())} ${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
         }
         return `${formatDateToday} ${formatTimeToday}`;
     }
@@ -192,14 +190,20 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'powderblue',
+    },
+    cell: {
+        flex: 0.33,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     modalWrapper: {
         flex: 0.75,
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         alignItems: 'center',
         borderWidth: 1,
         backgroundColor: 'skyblue',

@@ -24,7 +24,6 @@ export default class StudentForm extends Component {
       }
     
     render () {
-        console.log(this.props.tmp);
         const pick = userRoles.roles.map((item, index) => <Picker.Item 
         style={styles.container}
         label={userRoles.roleLabels[index]} 

@@ -39,8 +39,8 @@ export default class GroupList extends Component {
                     return (
                     <TouchableHighlight onPress={() => this.props.onPressGroup(item.groups_id)}>
                         <View style={styles.container}>
-                            <Text>{item.groups_name}</Text>
-                            <Text>{item.users_name}</Text>
+                            <View style={styles.cell}><Text>{item.groups_name}</Text></View>
+                            <View style={styles.cell}><Text>{item.users_name}</Text></View>
                         </View>
                     </TouchableHighlight>
                     );
@@ -122,6 +122,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: 'powderblue',
+    },
+    cell: {
+        flex: 0.5,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     modalWrapper: {
         flex: 0.5,

@@ -24,7 +24,8 @@ const query = {
     },
     training: {
         list: '/training/list',
-        add: '/training/add'
+        add: '/training/add',
+        edit: '/training'
     }
 }
 
@@ -239,6 +240,32 @@ export default class ServerApi {
             'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
+        });
+        const answer = await res.text();
+        return answer;
+    }
+
+    async editTraining(data) {
+        const {groupId, date, trainerId} = data;
+        const res = await fetch(`${this.host}${query.training.edit}/${data.id}`, {
+            method: 'PATCH',
+            headers: {
+            'token': this.token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({groupId, trainerId, 'date': date.toString()})
+        });
+        const answer = await res.text();
+        return answer;
+    }
+
+    async cancelTraining(id) {
+        const res = await fetch(`${this.host}${query.training.edit}/${id}`, {
+            method: 'DELETE',
+            headers: {
+            'token': this.token
+            }
         });
         const answer = await res.text();
         return answer;

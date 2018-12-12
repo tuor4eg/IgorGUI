@@ -74,6 +74,8 @@ onClickModal = () => {
   this.setState({showModal: !this.state.showModal});
 }
 
+makeTwoDigits = digit => digit.toString().length === 2 ? digit : `0${digit}`;
+
 //==User auth==
 
 loginUser = async () => {
@@ -97,11 +99,6 @@ addUser = async() => {
     Alert.alert('Заполните данные!');
     return;
   }
-  const checkUniqueLogin = this.state.userList.filter(item.login === login);
-  if (checkUniqueLogin.length !== 0) {
-    Alert.alert('Такой пользователь существует!');
-    return;
-  }
   this.setState({loading: true});
   try {
     await api.addUser({userName, login, role, openPassword});
@@ -115,8 +112,6 @@ addUser = async() => {
   this.onClickModal();
 }
 
-checkForOnlyAdmin = () => this.state.userList.filter(item => item.id !== this.state.id && item.role === 'admin');
-
 editUser = async() => {
   const {name, login, role, openPassword} = this.state.tmp;
   if (!name || !login) {
@@ -125,10 +120,6 @@ editUser = async() => {
   }
   if ( openPassword === '') {
     Alert.alert('Укажите пароль!');
-    return;
-  }
-  if (this.checkForOnlyAdmin().length === 0 && role != 'admin') {
-    Alert.alert('Должен остаться хотя бы один администратор!');
     return;
   }
   this.setState({loading: true});
@@ -144,10 +135,6 @@ editUser = async() => {
 }
 
 deleteUser = async(id) => {
-  if (this.checkForOnlyAdmin().length === 0) {
-    Alert.alert('Нельзя удалить единственного администратора!');
-    return;
-  }
   this.setState({loading: true});
   try {
     await api.deleteUser(id);
@@ -305,7 +292,11 @@ editGroup = async () => {
 getTrainingList = async(date) => {
   this.setState({loading: true});
   try {
-    const trainingList = await api.getTrainingList(date);
+    const unMappedList = await api.getTrainingList(date);
+    const trainingList = unMappedList.map(item => {
+      item.training_date = new Date(item.training_date);
+      return item;
+    });
     this.setState({loading: false, trainingList});
   }
   catch(error) {
@@ -314,18 +305,14 @@ getTrainingList = async(date) => {
 }
 
 addTraining =  async() => {
-  const today = new Date();
   const tmp = this.state.tmp;
-  const {groupId, trainerId, date, time} = tmp;
+  const {groupId, trainerId, date} = tmp;
   const getTrainerId = trainerId ? trainerId : this.state.userList[0].id;
   const getGroupId = groupId ? groupId : this.state.groupList[0].groups_id;
-  const getDate = date ? date : `${today.getFullYear()}.${today.getMonth()}.${today.getDate()}`;
-  const getTime = time ? time : `${today.getHours()}:${today.getMinutes()}:00`
   this.setState({loading: true});
   try {
-    await api.addTraining({'trainerId': getTrainerId, 'groupId': getGroupId, 'date': getDate, 'time': getTime});
+    await api.addTraining({'trainerId': getTrainerId, 'groupId': getGroupId, 'date': date.toString()});
     await this.getTrainingList(today);
-    console.log('222');
     this.setState({loading: false});
   }
   catch(error) {
@@ -333,6 +320,32 @@ addTraining =  async() => {
   }
   this.setState({tmp: {}});
   this.onClickModal();
+}
+
+editTraining = async () => {
+  this.setState({loading: true});
+  try {
+    await api.editTraining (this.state.tmp);
+    await this.getTrainingList(new Date());
+    this.setState({loading: false});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({loadScreen: menu.button1, tmp: {}});
+}
+
+cancelTraining = async (id) => {
+  this.setState({loading: true});
+  try {
+    await api.cancelTraining(id);
+    await this.getTrainingList(new Date());
+    this.setState({loading: false});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+  this.setState({loadScreen: menu.button1, tmp: {}});
 }
 
 //=====Pressing section=====
@@ -356,16 +369,15 @@ onPressStudent = async (id, name, groupId) => {
 onPressTraining = async (id) => {
   const [getTraining] = this.state.trainingList.filter(item => item.training_id === id);
   const {training_date, group_name, trainer_id, trainer_name, groups_id} = getTraining;
-  const getDate = new Date(training_date);
   await this.getStudentList(groups_id);
   await this.getUserList();
   this.setState({loadScreen: {'training': id}, tmp: {
+    'id': id,
     'groupId': groups_id, 
     'trainerId': trainer_id, 
     'trainerName': trainer_name, 
     'groupName': group_name,
-    'date': `${getDate.getDate()}.${getDate.getMonth()}.${getDate.getFullYear()}`,
-    'time': `${getDate.getHours()}:${getDate.getMinutes()}`
+    'date': new Date(training_date),
   }});
 }
 
@@ -373,6 +385,8 @@ onPressTraining = async (id) => {
 
 onPressMenu = async (name) => {
   switch(name) {
+    case(menu.button1):
+    this.getTrainingList(new Date());
     case(menu.button2):
       await this.getGroupList();
       await this.getUserList();
@@ -514,6 +528,8 @@ getUserList = async () => {
   renderTrainingForm = () => {
     return (
       <TrainingForm
+      editTraining={this.editTraining}
+      cancelTraining={this.cancelTraining}
       onEnterField={this.onEnterField}
       userList={this.state.userList}
       studentList={this.state.studentList}
