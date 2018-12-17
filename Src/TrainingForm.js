@@ -11,7 +11,7 @@ import {Button, StyleSheet, Text,
     View, DatePickerAndroid, Picker, 
     TouchableHighlight, FlatList, 
     KeyboardAvoidingView, Alert, 
-    TextInput, TimePickerAndroid } from 'react-native';
+    TextInput, TimePickerAndroid, Modal } from 'react-native';
 import CheckBox from 'react-native-checkbox';
 
 export default class TrainingForm extends Component {
@@ -78,9 +78,16 @@ export default class TrainingForm extends Component {
           }
     }
 
+    getCheckBoxStatus = (id) => {
+        const cashflows = this.props.cashflows;
+        const [getStudent] = cashflows.filter(item => item.students_id === id);
+        return !getStudent ? false : getStudent.cashflows_checkbox === 0 ? false : true ;
+    }
+
     render() {
         const tmp = this.props.tmp;
-        const dateToString = `${tmp.date.getFullYear()}-${tmp.date.getMonth()}-${tmp.date.getDate()}`;
+        const studentList = this.props.studentList;
+        const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth() + 1}.${tmp.date.getFullYear()}`;
         const userList = this.props.userList;
         const pick = userList.map(item => <Picker.Item label={item.name} value={item.id} backgroundColor='pink' key={item.id.toString()}/>);
         return (
@@ -90,37 +97,35 @@ export default class TrainingForm extends Component {
                     <Text>Тренировка группы {tmp.groupName} {dateToString} {this.getFormatDate(tmp.date)}</Text>
                 </View>
                 <View style={styles.top}>
-                <View style={styles.cell}><Text>Отметка</Text></View>
-                <View style={styles.cell}><Text>ФИО участника</Text></View>
-                <View style={styles.cell}><Text>Сумма</Text></View>
-                <View style={styles.cell}><Text>Комментарий</Text></View>
+                    <View style={styles.cell}><Text>Отметка</Text></View>
+                    <View style={styles.cell}><Text>ФИО участника</Text></View>
+                    <View style={styles.cell}><Text>Сумма</Text></View>
+                    <View style={styles.cell}><Text>Примечание</Text></View>
                 </View>
                 <View>
                     <FlatList
-                    data={this.props.studentList}
+                    style={styles.scrolling}
+                    data={studentList}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => console.log('lol')}>
+                    <TouchableHighlight onPress={() => this.props.onClickModal()}>
                         <View style={styles.container}>
                             <View style={styles.cell}>
                                 <CheckBox
                                 label=''
-                                checked={true}
+                                checked={this.getCheckBoxStatus(item.id)}
                                 onChange={(checked) => console.log('I am checked', checked)}
                                 />
                             </View>
                             <View style={styles.cell}><Text>{item.name}</Text></View>
                             <View style={styles.cell}>
                                 <TextInput 
-                                value='kek'
-                                onChangeText={(text) => console.log('kek')} 
-                                />
-                            </View>
-                            <View style={styles.cell}>
-                                <TextInput 
                                 value='lol'
                                 onChangeText={(text) => console.log('lol')} 
                                 />
+                            </View>
+                            <View style={styles.cell}>
+                                <Text>...</Text>
                             </View>
                         </View>
                     </TouchableHighlight>
@@ -153,8 +158,34 @@ export default class TrainingForm extends Component {
                     onPress={() => this.askBeforeCancel(this.props.tmp.id)}
                     title="Отменить тренировку"
                 />
+                <AddNoticeModal 
+                display={this.props.display}
+                onClickModal={this.props.onClickModal}
+                onEnterField={this.props.onEnterField}
+                />
                 </KeyboardAvoidingView>
             </View>
+        );
+    }
+}
+
+class AddNoticeModal extends Component {
+    render() {
+        return (
+            <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
+                <View style={styles.modalWrapper}>
+                    <Text>Добавить примечание</Text>
+                    <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'studentName')}/>
+                    <Button 
+                    onPress={() => console.log('ok')}
+                    title="Сохранить"
+                    />
+                    <Button 
+                    onPress={() => this.props.onClickModal()}
+                    title="Отмена"
+                    />
+                </View>
+            </Modal>
         );
     }
 }
@@ -162,7 +193,7 @@ export default class TrainingForm extends Component {
 const styles = StyleSheet.create({
     wrapper: {
         flexDirection: 'column',
-        //flex: 1
+        flex: 1
     },
     title: {
         flexDirection: 'row',
@@ -197,5 +228,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'skyblue',
         marginTop: 150,
         opacity: 1,
-    }
+    },
+    scrolling: {
+        height: '65%'
+    },
 });

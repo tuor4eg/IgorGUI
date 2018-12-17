@@ -26,6 +26,11 @@ const query = {
         list: '/training/list',
         add: '/training/add',
         edit: '/training'
+    },
+    cashflows: {
+        list: '/cashflows/list',
+        add: '/cachflows/add',
+        edit: '/cashflows/edit'
     }
 }
 
@@ -220,11 +225,13 @@ export default class ServerApi {
 
 //=====Training sectios=====
 
-    async getTrainingList(date) {
+    async getTrainingList(startDate, endDate) {
         const res = await fetch(`${this.host}${query.training.list}`, {
             method: 'GET',
             headers: {
                 'token': this.token,
+                'startDate': startDate ? startDate : 'none',
+                'endDate': endDate ? endDate : 'none'
             },
         });
         const trainingList = await res.json();
@@ -269,6 +276,17 @@ export default class ServerApi {
         });
         const answer = await res.text();
         return answer;
+    }
+
+    async getCashFlows(id) {
+        const res = await fetch(`${this.host}${query.cashflows.list}/${id}`, {
+            method: 'GET',
+            headers: {
+                'token': this.token,
+            },
+        });
+        const cashFlows = await res.json();
+        return cashFlows;
     }
 
 }

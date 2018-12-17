@@ -42,6 +42,12 @@ export default class App extends Component {
     studentList: [],
     //training options
     trainingList: [],
+    currentDate: {
+      begin: new Date().setHours(0, 0),
+      end: new Date().setHours(24, 0)
+    },
+    //cashflow options
+    cashflows: [],
     //navigation
     loadScreen: menu.button1,
     loading: false,
@@ -54,7 +60,7 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    this.getTrainingList(new Date());
+    this.getTrainingList(this.state.currentDate.begin);
   }
 
 //=====State fuctions=====
@@ -70,9 +76,7 @@ onEnterField = (data, key) => {
   this.setState({tmp: newTmp});
 }
 
-onClickModal = () => {
-  this.setState({showModal: !this.state.showModal});
-}
+onClickModal = () => this.setState({showModal: !this.state.showModal});
 
 makeTwoDigits = digit => digit.toString().length === 2 ? digit : `0${digit}`;
 
@@ -289,10 +293,10 @@ editGroup = async () => {
 
 //=====Training section=====
 
-getTrainingList = async(date) => {
+getTrainingList = async(startDate, endDate) => {
   this.setState({loading: true});
   try {
-    const unMappedList = await api.getTrainingList(date);
+    const unMappedList = await api.getTrainingList(startDate, endDate);
     const trainingList = unMappedList.map(item => {
       item.training_date = new Date(item.training_date);
       return item;
@@ -309,10 +313,11 @@ addTraining =  async() => {
   const {groupId, trainerId, date} = tmp;
   const getTrainerId = trainerId ? trainerId : this.state.userList[0].id;
   const getGroupId = groupId ? groupId : this.state.groupList[0].groups_id;
+  const getDate = date ? date : new Date();
   this.setState({loading: true});
   try {
-    await api.addTraining({'trainerId': getTrainerId, 'groupId': getGroupId, 'date': date.toString()});
-    await this.getTrainingList(today);
+    await api.addTraining({'trainerId': getTrainerId, 'groupId': getGroupId, 'date': getDate.getTime()});
+    await this.getTrainingList(this.state.currentDate.begin);
     this.setState({loading: false});
   }
   catch(error) {
@@ -323,10 +328,11 @@ addTraining =  async() => {
 }
 
 editTraining = async () => {
+  const {groupId, trainerId, date} = this.state.tmp;
   this.setState({loading: true});
   try {
-    await api.editTraining (this.state.tmp);
-    await this.getTrainingList(new Date());
+    await api.editTraining ({groupId, trainerId, 'date': date.getTime()});
+    await this.getTrainingList(this.state.currentDate.begin);
     this.setState({loading: false});
   }
   catch(error) {
@@ -339,13 +345,26 @@ cancelTraining = async (id) => {
   this.setState({loading: true});
   try {
     await api.cancelTraining(id);
-    await this.getTrainingList(new Date());
+    await this.getTrainingList(this.state.currentDate.begin);
     this.setState({loading: false});
   }
   catch(error) {
     this.setState({loading: false, error });
   }
   this.setState({loadScreen: menu.button1, tmp: {}});
+}
+
+//=====Cashflow's section======
+
+getCashFlows = async (id) => {
+  this.setState({loading: true});
+  try {
+    const cashflows = await api.getCashFlows(id);
+    this.setState({loading: false, cashflows});
+  }
+  catch(error) {
+    this.setState({loading: false, error});
+  }
 }
 
 //=====Pressing section=====
@@ -371,6 +390,7 @@ onPressTraining = async (id) => {
   const {training_date, group_name, trainer_id, trainer_name, groups_id} = getTraining;
   await this.getStudentList(groups_id);
   await this.getUserList();
+  await this.getCashFlows(id);
   this.setState({loadScreen: {'training': id}, tmp: {
     'id': id,
     'groupId': groups_id, 
@@ -386,7 +406,7 @@ onPressTraining = async (id) => {
 onPressMenu = async (name) => {
   switch(name) {
     case(menu.button1):
-    this.getTrainingList(new Date());
+    this.getTrainingList(this.state.currentDate.begin);
     case(menu.button2):
       await this.getGroupList();
       await this.getUserList();
@@ -528,6 +548,9 @@ getUserList = async () => {
   renderTrainingForm = () => {
     return (
       <TrainingForm
+      cashflows={this.state.cashflows}
+      onClickModal={this.onClickModal}
+      display={this.state.showModal}
       editTraining={this.editTraining}
       cancelTraining={this.cancelTraining}
       onEnterField={this.onEnterField}

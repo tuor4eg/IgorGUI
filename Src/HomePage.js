@@ -67,6 +67,10 @@ export default class HomePage extends Component {
                 onPress={() => this.getDataFromServer()}
                 title="Добавить тренировку"
                 />
+                <Button
+                onPress={() => this.getDataFromServer()}
+                title="Изменить дату"
+                />
                 <AddTrainingModal 
                 display={this.props.display} 
                 onClickModal={this.props.onClickModal} 
