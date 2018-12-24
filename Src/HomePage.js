@@ -9,6 +9,8 @@
 import React, {Component} from 'react';
 import {Button, StyleSheet, Text, View, DatePickerAndroid, FlatList, TouchableHighlight, TimePickerAndroid, Modal, Picker } from 'react-native';
 
+import CalendarForm from './Calendar.js';
+
 export default class HomePage extends Component {
     map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
 
@@ -32,8 +34,8 @@ export default class HomePage extends Component {
         this.props.onClickModal();
     }
 
-    render() {
-        const today = new Date();
+    renderMainPage() {
+        const today = new Date(this.props.today);
         const formatDateToday = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
         return (
             <View style={styles.wrapper}>
@@ -68,7 +70,7 @@ export default class HomePage extends Component {
                 title="Добавить тренировку"
                 />
                 <Button
-                onPress={() => this.getDataFromServer()}
+                onPress={() => this.props.onClickCalendar()}
                 title="Изменить дату"
                 />
                 <AddTrainingModal 
@@ -82,6 +84,21 @@ export default class HomePage extends Component {
                 title="Добавить тренировку"/>
             </View>
         );
+    }
+
+    renderCalendar() {
+        return(
+            <CalendarForm
+            today={this.props.today}
+            getTrainingList={this.props.getTrainingList}
+            onClickCalendar={this.props.onClickCalendar}
+            changeDate={this.props.changeDate}
+            />
+        )
+    }
+
+    render() {
+        return this.props.showCalendar ? this.renderCalendar() : this.renderMainPage();
     }
 }
 

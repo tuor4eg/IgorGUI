@@ -42,16 +42,15 @@ export default class App extends Component {
     studentList: [],
     //training options
     trainingList: [],
-    currentDate: {
-      begin: new Date().setHours(0, 0),
-      end: new Date().setHours(24, 0)
-    },
+    firstDate: new Date().setHours(0, 0),
+    lastDate: new Date().setHours(24, 0),
     //cashflow options
     cashflows: [],
     //navigation
     loadScreen: menu.button1,
     loading: false,
     showModal: false,
+    showCalendar: false,
     //data
     data: [],
     tmp: {},
@@ -60,7 +59,7 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    this.getTrainingList(this.state.currentDate.begin);
+    this.getTrainingList(this.state.firstDate);
   }
 
 //=====State fuctions=====
@@ -77,6 +76,10 @@ onEnterField = (data, key) => {
 }
 
 onClickModal = () => this.setState({showModal: !this.state.showModal});
+
+onClickCalendar = () => this.setState({showCalendar: !this.state.showCalendar});
+
+changeDate = (date) => this.setState({firstDate: date});
 
 makeTwoDigits = digit => digit.toString().length === 2 ? digit : `0${digit}`;
 
@@ -293,10 +296,10 @@ editGroup = async () => {
 
 //=====Training section=====
 
-getTrainingList = async(startDate, endDate) => {
+getTrainingList = async(startDate, endDate, statement) => {
   this.setState({loading: true});
   try {
-    const unMappedList = await api.getTrainingList(startDate, endDate);
+    const unMappedList = await api.getTrainingList(startDate, endDate, statement);
     const trainingList = unMappedList.map(item => {
       item.training_date = new Date(item.training_date);
       return item;
@@ -317,7 +320,7 @@ addTraining =  async() => {
   this.setState({loading: true});
   try {
     await api.addTraining({'trainerId': getTrainerId, 'groupId': getGroupId, 'date': getDate.getTime()});
-    await this.getTrainingList(this.state.currentDate.begin);
+    await this.getTrainingList(this.state.firstDate);
     this.setState({loading: false});
   }
   catch(error) {
@@ -332,7 +335,7 @@ editTraining = async () => {
   this.setState({loading: true});
   try {
     await api.editTraining ({groupId, trainerId, 'date': date.getTime()});
-    await this.getTrainingList(this.state.currentDate.begin);
+    await this.getTrainingList(this.state.firstDate);
     this.setState({loading: false});
   }
   catch(error) {
@@ -345,7 +348,7 @@ cancelTraining = async (id) => {
   this.setState({loading: true});
   try {
     await api.cancelTraining(id);
-    await this.getTrainingList(this.state.currentDate.begin);
+    await this.getTrainingList(this.state.firstDate);
     this.setState({loading: false});
   }
   catch(error) {
@@ -388,7 +391,6 @@ onPressStudent = async (id, name, groupId) => {
 onPressTraining = async (id) => {
   const [getTraining] = this.state.trainingList.filter(item => item.training_id === id);
   const {training_date, group_name, trainer_id, trainer_name, groups_id} = getTraining;
-  await this.getStudentList(groups_id);
   await this.getUserList();
   await this.getCashFlows(id);
   this.setState({loadScreen: {'training': id}, tmp: {
@@ -406,7 +408,7 @@ onPressTraining = async (id) => {
 onPressMenu = async (name) => {
   switch(name) {
     case(menu.button1):
-    this.getTrainingList(this.state.currentDate.begin);
+    this.getTrainingList(this.state.firstDate);
     case(menu.button2):
       await this.getGroupList();
       await this.getUserList();
@@ -531,8 +533,12 @@ getUserList = async () => {
   renderHomePage = () => {
     return (
       <HomePage
+      today={this.state.firstDate}
       display={this.state.showModal}
+      showCalendar={this.state.showCalendar}
+      changeDate={this.changeDate}
       onClickModal={this.onClickModal}
+      onClickCalendar={this.onClickCalendar}
       trainingList={this.state.trainingList}
       tmp={this.state.tmp}
       onEnterField={this.onEnterField}
@@ -540,6 +546,7 @@ getUserList = async () => {
       groupList={this.state.groupList}
       getGroupList={this.getGroupList}
       getUserList={this.getUserList}
+      getTrainingList={this.getTrainingList}
       addTraining={this.addTraining}
       onPressTraining={this.onPressTraining}/>
     );
@@ -553,9 +560,7 @@ getUserList = async () => {
       display={this.state.showModal}
       editTraining={this.editTraining}
       cancelTraining={this.cancelTraining}
-      onEnterField={this.onEnterField}
       userList={this.state.userList}
-      studentList={this.state.studentList}
       tmp={this.state.tmp}/>
     );
   }

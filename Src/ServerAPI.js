@@ -225,13 +225,14 @@ export default class ServerApi {
 
 //=====Training sectios=====
 
-    async getTrainingList(startDate, endDate) {
+    async getTrainingList(startDate, endDate, statement) {
         const res = await fetch(`${this.host}${query.training.list}`, {
             method: 'GET',
             headers: {
                 'token': this.token,
                 'startDate': startDate ? startDate : 'none',
-                'endDate': endDate ? endDate : 'none'
+                'endDate': endDate ? endDate : 'none',
+                'statement': statement? statement : 'none'
             },
         });
         const trainingList = await res.json();

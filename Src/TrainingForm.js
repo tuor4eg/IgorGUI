@@ -78,17 +78,11 @@ export default class TrainingForm extends Component {
           }
     }
 
-    getCheckBoxStatus = (id) => {
-        const cashflows = this.props.cashflows;
-        const [getStudent] = cashflows.filter(item => item.students_id === id);
-        return !getStudent ? false : getStudent.cashflows_checkbox === 0 ? false : true ;
-    }
-
     render() {
         const tmp = this.props.tmp;
-        const studentList = this.props.studentList;
-        const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth() + 1}.${tmp.date.getFullYear()}`;
         const userList = this.props.userList;
+        const cashflows = this.props.cashflows;
+        const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth() + 1}.${tmp.date.getFullYear()}`;
         const pick = userList.map(item => <Picker.Item label={item.name} value={item.id} backgroundColor='pink' key={item.id.toString()}/>);
         return (
             <View style={styles.wrapper}>
@@ -105,7 +99,7 @@ export default class TrainingForm extends Component {
                 <View>
                     <FlatList
                     style={styles.scrolling}
-                    data={studentList}
+                    data={cashflows}
                     renderItem={({item}) => {
                     return (
                     <TouchableHighlight onPress={() => this.props.onClickModal()}>
@@ -113,14 +107,14 @@ export default class TrainingForm extends Component {
                             <View style={styles.cell}>
                                 <CheckBox
                                 label=''
-                                checked={this.getCheckBoxStatus(item.id)}
-                                onChange={(checked) => console.log('I am checked', checked)}
+                                checked={!item.checkbox ? false : item.checkbox === 0 ? false : true}
+                                onChange={(checked) => this.prepareToUpdate({students_id: item.id, checkbox: checked}, 'cashflows')}
                                 />
                             </View>
                             <View style={styles.cell}><Text>{item.name}</Text></View>
                             <View style={styles.cell}>
                                 <TextInput 
-                                value='lol'
+                                value={item.sum ? item.sum.toString() : '0'}
                                 onChangeText={(text) => console.log('lol')} 
                                 />
                             </View>
