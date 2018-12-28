@@ -28,14 +28,15 @@ const host = 'http://192.168.17.108:3000';
 const token = '123';
 
 const menu = consts.menuButtonsList;
+const errorCodes = consts.errorCodes;
 
 const api = new ServerApi(host, token);
 
 export default class App extends Component {
   state = {
     //user options
-    auth: 'Admin',
-    role: 'admin',
+    auth: 'none',
+    role: 'none',
     userList: [],
     //group options
     groupList: [],
@@ -99,8 +100,8 @@ loginUser = async () => {
   this.setState({loading: true});
   try {
     const response = await api.authUser(this.state.tmp);
-    if (response.length === 0) {
-      Alert.alert('Неверное имя пользователя или пароль!');
+    if (errorCodes[response]) {
+      Alert.alert(errorCodes[response]);
     return;
     }
     this.setState({loading: false, auth: response.name, role: response.role, tmp: {}});
@@ -132,7 +133,7 @@ addUser = async() => {
   this.setState({loading: true});
   try {
     const answer = await api.addUser({userName, login, role, openPassword});
-    if (answer === 'user exists') {
+    if (answer === 409) {
       Alert.alert('Такой пользователь существует!');
       return;
     }

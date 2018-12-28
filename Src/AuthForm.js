@@ -7,12 +7,12 @@
  */
 
 import React, {Component} from 'react';
-import {Alert, Button, StyleSheet, TextInput, Text, View, ScrollView} from 'react-native';
+import {Alert, Button, StyleSheet, TextInput, Text, View, KeyboardAvoidingView} from 'react-native';
 
 export default class AuthForm extends Component {
     render() {
         return (
-            <ScrollView keyboardShouldPersistTaps='never'>
+            //<KeyboardAvoidingView>
             <View style={styles.wrapper}>
                 <View style={styles.title}>
                     <Text>Авторизация</Text>
@@ -30,7 +30,7 @@ export default class AuthForm extends Component {
                 title="Войти"
                 />
             </View>
-            </ScrollView>
+            //</KeyboardAvoidingView>
         );
     }
 }

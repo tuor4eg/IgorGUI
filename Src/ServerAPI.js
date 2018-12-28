@@ -53,6 +53,10 @@ export default class ServerApi {
             },
             body: JSON.stringify(user)
         });
+        console.log(res.status);
+        if (res.status !== 200) {
+            return res.status;
+        }
         const response = await res.json();
         return response;
     }
@@ -78,9 +82,7 @@ export default class ServerApi {
             },
             body: JSON.stringify(data)
            });
-        const answer = await res.text();
-        console.log(answer);
-        return answer;
+        return res.status;
     }
 
     async editUser(data) {
