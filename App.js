@@ -42,8 +42,8 @@ export default class App extends Component {
     studentList: [],
     //training options
     trainingList: [],
-    firstDate: new Date().setHours(0, 0),
-    lastDate: new Date().setHours(24, 0),
+    firstDate: new Date().setHours(0, 0, 0, 0),
+    lastDate: new Date().setHours(24, 0, 0, 0),
     //cashflow options
     cashflows: [],
     //navigation
@@ -51,6 +51,7 @@ export default class App extends Component {
     loading: false,
     showModal: false,
     showCalendar: false,
+    calendarMarks: {},
     //data
     data: [],
     tmp: {},
@@ -59,7 +60,7 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    this.getTrainingList(this.state.firstDate);
+    this.getTrainingList(this.state.firstDate, this.state.lastDate);
   }
 
 //=====State fuctions=====
@@ -75,13 +76,22 @@ onEnterField = (data, key) => {
   this.setState({tmp: newTmp});
 }
 
+onChangeArray = (data, id, key) => {
+  const cashflows = this.state.cashflows;
+  const [getStudent] = cashflows.filter(item => item.id === id);
+  cashflows[cashflows.indexOf(getStudent)][key] = key === 'checkbox' ? data === true ? 1 : 0 : data;
+  this.setState({cashflows});
+}
+
 onClickModal = () => this.setState({showModal: !this.state.showModal});
 
 onClickCalendar = () => this.setState({showCalendar: !this.state.showCalendar});
 
-changeDate = (date) => this.setState({firstDate: date});
+changeDate = (date) => this.setState({firstDate: new Date(date).setHours(0, 0, 0, 0), lastDate: new Date(date).setHours(24, 0, 0, 0)});
 
 makeTwoDigits = digit => digit.toString().length === 2 ? digit : `0${digit}`;
+
+//=====User's section=====
 
 //==User auth==
 
@@ -100,6 +110,19 @@ loginUser = async () => {
   }
 }
 
+getUserList = async () => {
+  this.setState({loading: true});
+  try {
+    const userList = await api.getUserList();
+    this.setState({loading: false, userList: userList});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+}
+
+//==Add user==
+
 addUser = async() => {
   const {userName, login, role, openPassword} = this.state.tmp;
   if (!userName || !login || !openPassword) {
@@ -108,7 +131,11 @@ addUser = async() => {
   }
   this.setState({loading: true});
   try {
-    await api.addUser({userName, login, role, openPassword});
+    const answer = await api.addUser({userName, login, role, openPassword});
+    if (answer === 'user exists') {
+      Alert.alert('Такой пользователь существует!');
+      return;
+    }
     await this.getUserList();
     this.setState({loading: false});
   }
@@ -154,13 +181,18 @@ deleteUser = async(id) => {
   this.setState({tmp: {}, loadScreen: menu.button3});
 }
 
-onPressUser = async (id) => {
-    await this.getUserList();
-    const currentUser = this.state.userList.filter(item => item.id === id)[0];
-    this.setState({loadScreen: {'user': id}, tmp: currentUser});
-}
-
 //=====Group section=====
+
+getGroupList = async () => {
+  this.setState({loading: true});
+  try {
+    const groupList = await api.getGroupList();
+    this.setState({loading: false, groupList: groupList});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
+}
 
 //==Adding group==
 
@@ -296,10 +328,10 @@ editGroup = async () => {
 
 //=====Training section=====
 
-getTrainingList = async(startDate, endDate, statement) => {
+getTrainingList = async(firstDate, lastDate, statement) => {
   this.setState({loading: true});
   try {
-    const unMappedList = await api.getTrainingList(startDate, endDate, statement);
+    const unMappedList = await api.getTrainingList(firstDate, lastDate, statement);
     const trainingList = unMappedList.map(item => {
       item.training_date = new Date(item.training_date);
       return item;
@@ -320,7 +352,7 @@ addTraining =  async() => {
   this.setState({loading: true});
   try {
     await api.addTraining({'trainerId': getTrainerId, 'groupId': getGroupId, 'date': getDate.getTime()});
-    await this.getTrainingList(this.state.firstDate);
+    await this.getTrainingList(this.state.firstDate, this.state.lastDate);
     this.setState({loading: false});
   }
   catch(error) {
@@ -335,7 +367,8 @@ editTraining = async () => {
   this.setState({loading: true});
   try {
     await api.editTraining ({groupId, trainerId, 'date': date.getTime()});
-    await this.getTrainingList(this.state.firstDate);
+    await this.returnCashFlows(this.state.tmp.id);
+    await this.getTrainingList(this.state.firstDate, this.state.lastDate);
     this.setState({loading: false});
   }
   catch(error) {
@@ -348,13 +381,24 @@ cancelTraining = async (id) => {
   this.setState({loading: true});
   try {
     await api.cancelTraining(id);
-    await this.getTrainingList(this.state.firstDate);
+    await this.getTrainingList(this.state.firstDate, this.state.lastDate);
     this.setState({loading: false});
   }
   catch(error) {
     this.setState({loading: false, error });
   }
   this.setState({loadScreen: menu.button1, tmp: {}});
+}
+
+getCalendarMarks = async() => {
+  this.setState({loading: true});
+  try{
+    const calendarMarks = await api.getCalendarMarks();
+    this.setState({loading: false, calendarMarks});
+  }
+  catch(error) {
+    this.setState({loading: false, error });
+  }
 }
 
 //=====Cashflow's section======
@@ -364,6 +408,17 @@ getCashFlows = async (id) => {
   try {
     const cashflows = await api.getCashFlows(id);
     this.setState({loading: false, cashflows});
+  }
+  catch(error) {
+    this.setState({loading: false, error});
+  }
+}
+
+returnCashFlows = async(id) => {
+  this.setState({loading: true});
+  try {
+    await api.returnCashFlows(this.state.cashflows, id);
+    this.setState({loading: false});
   }
   catch(error) {
     this.setState({loading: false, error});
@@ -383,6 +438,12 @@ onPressEditGroup = async (id) => {
   this.setState({loadScreen: {'group': id}, tmp: {'groupId': id, 'groupName': getGroup.groups_name, 'trainerId': getGroup.users_id}})
 }
 
+onPressUser = async (id) => {
+  await this.getUserList();
+  const currentUser = this.state.userList.filter(item => item.id === id)[0];
+  this.setState({loadScreen: {'user': id}, tmp: currentUser});
+}
+
 onPressStudent = async (id, name, groupId) => {
   await this.getGroupList();
   this.setState({loadScreen: {'student': id}, tmp: {'studentName': name, 'groupId': groupId}});
@@ -400,6 +461,7 @@ onPressTraining = async (id) => {
     'trainerName': trainer_name, 
     'groupName': group_name,
     'date': new Date(training_date),
+    'cashflows': []
   }});
 }
 
@@ -408,7 +470,7 @@ onPressTraining = async (id) => {
 onPressMenu = async (name) => {
   switch(name) {
     case(menu.button1):
-    this.getTrainingList(this.state.firstDate);
+    this.getTrainingList(this.state.firstDate, this.state.lastDate);
     case(menu.button2):
       await this.getGroupList();
       await this.getUserList();
@@ -420,28 +482,6 @@ onPressMenu = async (name) => {
   this.setState({loadScreen: name, tmp: {}});
   if (this.state.showModal) {
     this.onClickModal();
-  }
-}
-
-getGroupList = async () => {
-  this.setState({loading: true});
-  try {
-    const groupList = await api.getGroupList();
-    this.setState({loading: false, groupList: groupList});
-  }
-  catch(error) {
-    this.setState({loading: false, error });
-  }
-}
-
-getUserList = async () => {
-  this.setState({loading: true});
-  try {
-    const userList = await api.getUserList();
-    this.setState({loading: false, userList: userList});
-  }
-  catch(error) {
-    this.setState({loading: false, error });
   }
 }
 
@@ -533,9 +573,12 @@ getUserList = async () => {
   renderHomePage = () => {
     return (
       <HomePage
-      today={this.state.firstDate}
+      firstDate={this.state.firstDate}
+      lastDate={this.state.lastDate}
       display={this.state.showModal}
       showCalendar={this.state.showCalendar}
+      calendarMarks={this.state.calendarMarks}
+      getCalendarMarks={this.getCalendarMarks}
       changeDate={this.changeDate}
       onClickModal={this.onClickModal}
       onClickCalendar={this.onClickCalendar}
@@ -561,7 +604,10 @@ getUserList = async () => {
       editTraining={this.editTraining}
       cancelTraining={this.cancelTraining}
       userList={this.state.userList}
-      tmp={this.state.tmp}/>
+      onChangeArray={this.onChangeArray}
+      tmp={this.state.tmp}
+      onEnterField={this.onEnterField}
+      />
     );
   }
 

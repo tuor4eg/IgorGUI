@@ -11,8 +11,9 @@ import {Button, StyleSheet, Text,
     View, DatePickerAndroid, Picker, 
     TouchableHighlight, FlatList, 
     KeyboardAvoidingView, Alert, 
-    TextInput, TimePickerAndroid, Modal } from 'react-native';
-import CheckBox from 'react-native-checkbox';
+    TextInput, TimePickerAndroid, Modal, CheckBox } from 'react-native';
+
+//import CheckBox from 'react-native-checkbox';
 
 export default class TrainingForm extends Component {
     map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
@@ -78,6 +79,20 @@ export default class TrainingForm extends Component {
           }
     }
 
+    onChangeSum = (value, id, key) => !isNaN(Number(value)) ? this.props.onChangeArray(value, id, key) : Alert.alert("Введите число!");
+
+    prepareNotice = (text) => {
+        if (!text) {
+            return '...'
+        }
+        return text.length > 10 ? `${text.substring(0, 9)}...` : text;
+    }
+
+    getNoticeModal = (id) => {
+        this.props.onEnterField(id, 'student_id');
+        this.props.onClickModal();
+    }
+
     render() {
         const tmp = this.props.tmp;
         const userList = this.props.userList;
@@ -99,27 +114,27 @@ export default class TrainingForm extends Component {
                 <View>
                     <FlatList
                     style={styles.scrolling}
-                    data={cashflows}
+                    data={cashflows.map(i => i)}
                     renderItem={({item}) => {
                     return (
-                    <TouchableHighlight onPress={() => this.props.onClickModal()}>
+                    <TouchableHighlight onPress={() => this.getNoticeModal(item.id)}>
                         <View style={styles.container}>
                             <View style={styles.cell}>
                                 <CheckBox
                                 label=''
-                                checked={!item.checkbox ? false : item.checkbox === 0 ? false : true}
-                                onChange={(checked) => this.prepareToUpdate({students_id: item.id, checkbox: checked}, 'cashflows')}
+                                value={!item.checkbox ? false : item.checkbox === 0 ? false : true}
+                                onValueChange={(value) => this.props.onChangeArray(value, item.id, 'checkbox')}
                                 />
                             </View>
                             <View style={styles.cell}><Text>{item.name}</Text></View>
                             <View style={styles.cell}>
                                 <TextInput 
                                 value={item.sum ? item.sum.toString() : '0'}
-                                onChangeText={(text) => console.log('lol')} 
+                                onChangeText={(text) => this.onChangeSum(text, item.id, 'sum')} 
                                 />
                             </View>
                             <View style={styles.cell}>
-                                <Text>...</Text>
+                                <Text>{this.prepareNotice(item.notice)}</Text>
                             </View>
                         </View>
                     </TouchableHighlight>
@@ -154,8 +169,10 @@ export default class TrainingForm extends Component {
                 />
                 <AddNoticeModal 
                 display={this.props.display}
+                tmp={this.props.tmp}
                 onClickModal={this.props.onClickModal}
                 onEnterField={this.props.onEnterField}
+                onChangeArray={this.props.onChangeArray}
                 />
                 </KeyboardAvoidingView>
             </View>
@@ -164,14 +181,19 @@ export default class TrainingForm extends Component {
 }
 
 class AddNoticeModal extends Component {
+    onEnterNotice = (text, id) => {
+        this.props.onChangeArray(text, id, 'notice');
+        this.props.onClickModal();
+    }
+
     render() {
         return (
             <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
                 <View style={styles.modalWrapper}>
                     <Text>Добавить примечание</Text>
-                    <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'studentName')}/>
+                    <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'notice')}/>
                     <Button 
-                    onPress={() => console.log('ok')}
+                    onPress={() => this.onEnterNotice(this.props.tmp.notice, this.props.tmp.student_id)}
                     title="Сохранить"
                     />
                     <Button 

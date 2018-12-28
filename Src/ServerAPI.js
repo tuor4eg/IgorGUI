@@ -25,7 +25,8 @@ const query = {
     training: {
         list: '/training/list',
         add: '/training/add',
-        edit: '/training'
+        edit: '/training',
+        marks: '/training/marks'
     },
     cashflows: {
         list: '/cashflows/list',
@@ -78,6 +79,7 @@ export default class ServerApi {
             body: JSON.stringify(data)
            });
         const answer = await res.text();
+        console.log(answer);
         return answer;
     }
 
@@ -225,13 +227,13 @@ export default class ServerApi {
 
 //=====Training sectios=====
 
-    async getTrainingList(startDate, endDate, statement) {
+    async getTrainingList(firstDate, lastDate, statement) {
         const res = await fetch(`${this.host}${query.training.list}`, {
             method: 'GET',
             headers: {
                 'token': this.token,
-                'startDate': startDate ? startDate : 'none',
-                'endDate': endDate ? endDate : 'none',
+                'firstDate': firstDate ? firstDate : 'none',
+                'lastDate': lastDate ? lastDate : 'none',
                 'statement': statement? statement : 'none'
             },
         });
@@ -279,6 +281,17 @@ export default class ServerApi {
         return answer;
     }
 
+    async getCalendarMarks() {
+        const res = await fetch(`${this.host}${query.training.marks}`, {
+            method: 'GET',
+            headers: {
+                'token': this.token,
+            },
+        });
+        const marks = await res.json();
+        return marks;
+    }
+
     async getCashFlows(id) {
         const res = await fetch(`${this.host}${query.cashflows.list}/${id}`, {
             method: 'GET',
@@ -288,6 +301,20 @@ export default class ServerApi {
         });
         const cashFlows = await res.json();
         return cashFlows;
+    }
+
+    async returnCashFlows(data, id) {
+        const res = await fetch(`${this.host}${query.cashflows.edit}/${id}`, {
+            method: 'POST',
+            headers: {
+            'token': this.token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        const answer = await res.text();
+        return answer;
     }
 
 }

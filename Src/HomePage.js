@@ -34,8 +34,13 @@ export default class HomePage extends Component {
         this.props.onClickModal();
     }
 
+    prepareCalendar = () => {
+        this.props.getCalendarMarks();
+        this.props.onClickCalendar();
+    }
+
     renderMainPage() {
-        const today = new Date(this.props.today);
+        const today = new Date(this.props.firstDate);
         const formatDateToday = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
         return (
             <View style={styles.wrapper}>
@@ -70,7 +75,7 @@ export default class HomePage extends Component {
                 title="Добавить тренировку"
                 />
                 <Button
-                onPress={() => this.props.onClickCalendar()}
+                onPress={() => this.prepareCalendar()}
                 title="Изменить дату"
                 />
                 <AddTrainingModal 
@@ -88,12 +93,16 @@ export default class HomePage extends Component {
 
     renderCalendar() {
         return(
-            <CalendarForm
-            today={this.props.today}
-            getTrainingList={this.props.getTrainingList}
-            onClickCalendar={this.props.onClickCalendar}
-            changeDate={this.props.changeDate}
-            />
+            <View style={styles.wrapper}>
+                <CalendarForm
+                firstDate={this.props.firstDate}
+                lastDate={this.props.lastDate}
+                calendarMarks={this.props.calendarMarks}
+                getTrainingList={this.props.getTrainingList}
+                onClickCalendar={this.props.onClickCalendar}
+                changeDate={this.props.changeDate}
+                />
+            </View>
         )
     }
 

@@ -20,19 +20,27 @@ LocaleConfig.locales['ru'] = {
   LocaleConfig.defaultLocale = 'ru';
 
 export default class CalendarForm extends Component {
-    selectDate = (date) => {
-        this.props.changeDate(date);
-        this.props.getTrainingList(date);
-        this.props.onClickCalendar();
+    selectDate = async (date) => {
+      await this.props.changeDate(date);
+      await this.props.getTrainingList(this.props.firstDate, this.props.lastDate);
+      this.props.onClickCalendar();
     }
 
     render() {
-        const today = new Date(this.props.today);
-        const strate = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
+        const calendarMarks = this.props.calendarMarks
+        const makeMarks = Object.keys(calendarMarks).reduce((acc, element) => {
+          if (calendarMarks[element] === 1) {
+            return {...acc, [element]: {dots: [oneTraining], selected: true, selectedColor: 'green'}}
+          }
+          if (calendarMarks[element] === 2) {
+            return {...acc, [element]: {dots: [oneTraining, twoTrainings], selected: true, selectedColor: 'pink'}}
+          }
+          return  {...acc, [element]: {dots: [oneTraining, twoTrainings, threeMore], selected: true, selectedColor: 'blue'}}
+        }, {});
         return (
           <View>
             <Calendar
-            current={new Date(this.props.today)}
+            current={new Date(this.props.firstDate)}
             onDayPress={(day) => this.selectDate(day.timestamp)}
             onDayLongPress={(day) => {console.log('selected day', day)}}
             monthFormat={'yyyy MM'}
@@ -46,14 +54,14 @@ export default class CalendarForm extends Component {
             showWeekNumbers={true}
             onPressArrowLeft={substractMonth => substractMonth()}
             onPressArrowRight={addMonth => addMonth()}
-            markedDates={{
-                [strate]: {selected: true, marked: true, selectedColor: 'blue'},
-                '2018-12-16': {marked: true},
-                '2018-12-20': {marked: true, dotColor: 'red', activeOpacity: 0},
-                '2018-12-31': {disabled: true, disableTouchEvent: true}
-              }}
+            markedDates={makeMarks}
+            markingType={'multi-dot'}
             />
           </View>
         );
     }
 }
+
+const oneTraining = {key:'oneTraining', color: 'red', selectedDotColor: 'blue'};
+const twoTrainings = {key:'twoTrainings', color: 'blue', selectedDotColor: 'blue'};
+const threeMore = {key:'threeMore', color: 'green'};
