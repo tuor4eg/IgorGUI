@@ -53,7 +53,6 @@ export default class ServerApi {
             },
             body: JSON.stringify(user)
         });
-        console.log(res.status);
         if (res.status !== 200) {
             return res.status;
         }
@@ -95,8 +94,7 @@ export default class ServerApi {
             },
             body: JSON.stringify(data)
            });
-        const answer = await res.text();
-        return answer;
+           return res.status;
     }
 
     async deleteUser(id) {
@@ -106,8 +104,7 @@ export default class ServerApi {
             'token': this.token
             }
         });
-        const answer = await res.text();
-        return answer;
+        return res.status;
     }
 
 //=====Group's section=====

@@ -35,7 +35,7 @@ export default class CalendarForm extends Component {
           if (calendarMarks[element] === 2) {
             return {...acc, [element]: {dots: [oneTraining, twoTrainings], selected: true, selectedColor: 'pink'}}
           }
-          return  {...acc, [element]: {dots: [oneTraining, twoTrainings, threeMore], selected: true, selectedColor: 'blue'}}
+          return  {...acc, [element]: {dots: [oneTraining, twoTrainings, threeMore], selected: true, selectedColor: 'powderblue'}}
         }, {});
         return (
           <View>

@@ -133,8 +133,8 @@ addUser = async() => {
   this.setState({loading: true});
   try {
     const answer = await api.addUser({userName, login, role, openPassword});
-    if (answer === 409) {
-      Alert.alert('Такой пользователь существует!');
+    if (answer !== 200) {
+      Alert.alert(errorCodes[answer]);
       return;
     }
     await this.getUserList();
@@ -159,7 +159,11 @@ editUser = async() => {
   }
   this.setState({loading: true});
   try {
-    await api.editUser(this.state.tmp);
+    const answer = await api.editUser(this.state.tmp);
+    if (answer !== 200) {
+      Alert.alert(errorCodes[answer]);
+      return;
+    }
     await this.getUserList();
     this.setState({loading: false});
   }
@@ -172,7 +176,11 @@ editUser = async() => {
 deleteUser = async(id) => {
   this.setState({loading: true});
   try {
-    await api.deleteUser(id);
+    const answer = await api.deleteUser(id);
+    if (answer !== 200) {
+      Alert.alert(errorCodes[answer]);
+      return;
+    }
     await this.getUserList();
     this.setState({loading: false});
   }
@@ -201,7 +209,7 @@ addGroup = async () => {
   const {groupName, groupTrainer} = this.state.tmp;
   const trainerId = groupTrainer ? groupTrainer.id : this.state.userList[0].id;
   if (!groupName) {
-    Alert.alert('Введите имя!');
+    Alert.alert('Введите название!');
     return;
   }
   this.setState({loading: true});
@@ -483,6 +491,9 @@ onPressMenu = async (name) => {
   this.setState({loadScreen: name, tmp: {}});
   if (this.state.showModal) {
     this.onClickModal();
+  }
+  if (this.state.showCalendar) {
+    this.onClickCalendar();
   }
 }
 
