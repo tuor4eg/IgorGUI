@@ -99,6 +99,12 @@ export default class TrainingForm extends Component {
         const cashflows = this.props.cashflows;
         const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth() + 1}.${tmp.date.getFullYear()}`;
         const pick = userList.map(item => <Picker.Item label={item.name} value={item.id} backgroundColor='pink' key={item.id.toString()}/>);
+        const counter = cashflows.reduce((acc, item) => {
+            const totalCount = item.checkbox ? acc[0] + 1 : acc[0];
+            const totalSum = item.sum ? acc[1] + 1 : acc[1];
+            return [totalCount, totalSum];
+        }, [0, 0]);
+
         return (
             <View style={styles.wrapper}>
             <KeyboardAvoidingView behavior='position' enabled>
@@ -143,6 +149,10 @@ export default class TrainingForm extends Component {
                     keyExtractor={(item, index) => index.toString()}
                     ItemSeparatorComponent={this.renderSeparator}
                     />
+                </View>
+                <View style={styles.top}>
+                    <Text>Всего участников: {counter[0]}</Text>
+                    <Text>Итого, руб.: {counter[1]}</Text>
                 </View>
                 <View style={styles.top}>
                     <Text>Тренер</Text>

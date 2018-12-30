@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, View, Alert  } from 'react-native';
+import {Button, StyleSheet, View, Alert, TouchableHighlight, Text } from 'react-native';
 //Import Components
 import AuthForm from './Src/AuthForm.js';
 import ServerApi from './Src/ServerAPI.js';
@@ -29,14 +29,15 @@ const token = '123';
 
 const menu = consts.menuButtonsList;
 const errorCodes = consts.errorCodes;
+const colors = consts.colors;
 
 const api = new ServerApi(host, token);
 
 export default class App extends Component {
   state = {
     //user options
-    auth: 'none',
-    role: 'none',
+    auth: 'Admin',
+    role: 'admin',
     userList: [],
     //group options
     groupList: [],
@@ -662,10 +663,12 @@ onPressMenu = async (name) => {
     return(
       <View style={styles.overwrapper}>
         {this.renderScreen()}
-        <Button
-          onPress={() => this.setState({auth: 'none', role: 'none', loadScreen: menu.button1})}
-          title="Выйти"
-          />
+        <TouchableHighlight
+        style={styles.button}
+        onPress={() => this.setState({auth: 'none', role: 'none', loadScreen: menu.button1})}
+        >
+          <Text style={styles.buttonText}>Выйти</Text>
+        </TouchableHighlight>
         <MainMenu onPressMenu={this.onPressMenu}/>
       </View>
       );
@@ -681,6 +684,18 @@ const styles = StyleSheet.create({
   overwrapper: {
     flex: 1,
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+  },
+  button: {
+    height: '5%',
+    backgroundColor: colors.grey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 5
+  },
+  buttonText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: 'white'
   }
 });

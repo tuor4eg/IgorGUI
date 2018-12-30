@@ -12,22 +12,23 @@ import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight } 
 import * as consts from './const.js'
 
 const menu = consts.menuButtonsList;
+const colors = consts.colors;
 
 export default class MainMenu extends Component {
     render() {
         return (
             <View style={styles.container}>
                 <TouchableHighlight style={styles.button} onPress={() => this.props.onPressMenu(menu.button1)}>
-                    <Text>{menu.button1}</Text>
+                    <Text style={styles.buttonText}>{menu.button1}</Text>
                 </TouchableHighlight>
                 <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu(menu.button2)}>
-                    <Text>{menu.button2}</Text>
+                    <Text style={styles.buttonText}>{menu.button2}</Text>
                 </TouchableHighlight>
                 <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu(menu.button3)}>
-                    <Text>{menu.button3}</Text>
+                    <Text style={styles.buttonText}>{menu.button3}</Text>
                 </TouchableHighlight>
                 <TouchableHighlight style={styles.button}  onPress={() => this.props.onPressMenu(menu.button4)}>
-                    <Text>{menu.button4}</Text>
+                    <Text style={styles.buttonText}>{menu.button4}</Text>
                 </TouchableHighlight>
             </View>
         );
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: 'skyblue',
+        backgroundColor: colors.grey,
     },
     button: {
         flex: 1,
@@ -52,5 +53,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
+    },
+    buttonText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: 'white'
     }
 });

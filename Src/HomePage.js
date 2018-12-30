@@ -7,9 +7,11 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, DatePickerAndroid, FlatList, TouchableHighlight, TimePickerAndroid, Modal, Picker } from 'react-native';
+import {Button, StyleSheet, Text, View, DatePickerAndroid, FlatList, 
+    TouchableHighlight, TouchableOpacity, TimePickerAndroid, Modal, Picker, Image } from 'react-native';
 
 import CalendarForm from './Calendar.js';
+import {colors} from './const.js';
 
 export default class HomePage extends Component {
     map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
@@ -20,7 +22,7 @@ export default class HomePage extends Component {
             style={{
                 height: 1,
                 width: "100%",
-                backgroundColor: "black",
+                backgroundColor: colors.grey,
             }}
           />
         );
@@ -45,23 +47,31 @@ export default class HomePage extends Component {
         return (
             <View style={styles.wrapper}>
                 <View style={styles.title}>
-                    <Text>Расписание занятий на {formatDateToday}</Text>
+                    <Text style={styles.titleText}>Расписание занятий на {formatDateToday}</Text>
+                    <TouchableHighlight
+                    onPress={() => this.prepareCalendar()}
+                    >
+                        <Image 
+                        source={require('./images/ic_action_date_range.png')}
+                        />
+                    </TouchableHighlight>
                 </View>
                 <View style={styles.top}>
-                    <View style={styles.cell}><Text>Дата</Text></View>
-                    <View style={styles.cell}><Text>Группа</Text></View>
-                    <View style={styles.cell}><Text>Тренер</Text></View>
+                    <View style={styles.cell}><Text style={styles.topText}>Время</Text></View>
+                    <View style={styles.cell}><Text style={styles.topText}>Группа</Text></View>
+                    <View style={styles.cell}><Text style={styles.topText}>Тренер</Text></View>
                 </View>
                 <View>
                     <FlatList
+                    style={{height: '80%'}}
                     data={this.props.trainingList}
                     renderItem={({item}) => {
                     return (
                     <TouchableHighlight onPress={() => this.props.onPressTraining(item.training_id)}>
                         <View style={styles.container}>
-                            <View style={styles.cell}><Text>{this.getFormatDate(item.training_date)}</Text></View>
-                            <View style={styles.cell}><Text style={styles.cell}>{item.group_name}</Text></View>
-                            <View style={styles.cell}><Text style={styles.cell}>{item.trainer_name}</Text></View>
+                            <View style={styles.cell}><Text style={styles.cellText}>{this.getFormatDate(item.training_date)}</Text></View>
+                            <View style={styles.cell}><Text style={styles.cellText}>{item.group_name}</Text></View>
+                            <View style={styles.cell}><Text style={styles.cellText}>{item.trainer_name}</Text></View>
                         </View>
                     </TouchableHighlight>
                     );
@@ -69,15 +79,16 @@ export default class HomePage extends Component {
                     keyExtractor={(item, index) => index.toString()}
                     ItemSeparatorComponent={this.renderSeparator}
                     />
+                    <TouchableOpacity
+                    activeOpacity={0.5}
+                    style={styles.TouchableOpacityStyle}
+                    onPress={() => this.getDataFromServer()}
+                    >
+                    <Image 
+                    source={require('./images/ic_action_control_point.png')}
+                    />
+                    </TouchableOpacity>
                 </View>
-                <Button
-                onPress={() => this.getDataFromServer()}
-                title="Добавить тренировку"
-                />
-                <Button
-                onPress={() => this.prepareCalendar()}
-                title="Изменить дату"
-                />
                 <AddTrainingModal 
                 display={this.props.display} 
                 onClickModal={this.props.onClickModal} 
@@ -209,26 +220,37 @@ const styles = StyleSheet.create({
     },
     title: {
         flexDirection: 'row',
-        justifyContent: 'center',
-        backgroundColor: 'yellow'
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        backgroundColor: colors.orange,
+        height: '10%'
     },
     top: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: 'pink'
+        alignItems: 'center',
+        backgroundColor: colors.grey,
+        height: '5%'
     },
     container: {
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'powderblue',
+        backgroundColor: 'white',
     },
     cell: {
         flex: 0.33,
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        height: 50
+    },
+    cellText: {
+        fontSize: 16,
+        color: colors.grey,
+        textAlign: 'center',
+        fontWeight: 'bold'
     },
     modalWrapper: {
         flex: 0.75,
@@ -242,11 +264,25 @@ const styles = StyleSheet.create({
         //width: 400,
         //height: 400
     },
-    itemStyle: {
-        fontSize: 15,
-        height: 75,
-        color: 'black',
+    titleText: {
+        fontSize: 18,
+        color: colors.grey,
         textAlign: 'center',
         fontWeight: 'bold'
-      }
+    },
+    topText: {
+        fontSize: 16,
+        color: 'white',
+        textAlign: 'center',
+        fontWeight: 'bold'
+    },
+    TouchableOpacityStyle:{
+        position: 'absolute',
+        width: 50,
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+        right: 20,
+        bottom: 10,
+      },
 });
