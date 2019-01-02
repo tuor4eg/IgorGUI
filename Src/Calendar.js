@@ -10,6 +10,8 @@ import React, {Component} from 'react';
 import {View, Text} from 'react-native';
 import { Calendar, CalendarList, Agenda, LocaleConfig } from 'react-native-calendars';
 
+import {colors} from './const.js';
+
 LocaleConfig.locales['ru'] = {
     monthNames: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
     monthNamesShort: ['Янв.','Февр.','Март','Апр.','Май','Июнь','Июль','Авг.','Сент.','Окт.','Нояб.','Дек.'],
@@ -27,16 +29,17 @@ export default class CalendarForm extends Component {
     }
 
     render() {
-        const calendarMarks = this.props.calendarMarks
+        const calendarMarks = this.props.calendarMarks;
         const makeMarks = Object.keys(calendarMarks).reduce((acc, element) => {
           if (calendarMarks[element] === 1) {
-            return {...acc, [element]: {dots: [oneTraining], selected: true, selectedColor: 'green'}}
+            return {...acc, [element]: {dots: [oneTraining], selected: true, selectedColor: colors.grey}}
           }
           if (calendarMarks[element] === 2) {
-            return {...acc, [element]: {dots: [oneTraining, twoTrainings], selected: true, selectedColor: 'pink'}}
+            return {...acc, [element]: {dots: [oneTraining, twoTrainings], selected: true, selectedColor: colors.grey}}
           }
-          return  {...acc, [element]: {dots: [oneTraining, twoTrainings, threeMore], selected: true, selectedColor: 'powderblue'}}
+          return  {...acc, [element]: {dots: [oneTraining, twoTrainings, threeMore], selected: true, selectedColor: colors.grey}};
         }, {});
+        console.log(makeMarks);
         return (
           <View>
             <Calendar
@@ -62,6 +65,6 @@ export default class CalendarForm extends Component {
     }
 }
 
-const oneTraining = {key:'oneTraining', color: 'red', selectedDotColor: 'blue'};
-const twoTrainings = {key:'twoTrainings', color: 'blue', selectedDotColor: 'blue'};
-const threeMore = {key:'threeMore', color: 'green'};
+const oneTraining = {key:'oneTraining', color: 'white', selectedDotColor: 'white'};
+const twoTrainings = {key:'twoTrainings', color: 'white', selectedDotColor: 'white'};
+const threeMore = {key:'threeMore', color: 'white'};

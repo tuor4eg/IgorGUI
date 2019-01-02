@@ -45,14 +45,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: colors.grey,
     },
     button: {
         flex: 1,
-        height: 70,
+        height: 65,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1,
+        margin: 2,
+        borderRadius: 10,
+        backgroundColor: colors.grey,
     },
     buttonText: {
         fontSize: 20,

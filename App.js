@@ -663,12 +663,6 @@ onPressMenu = async (name) => {
     return(
       <View style={styles.overwrapper}>
         {this.renderScreen()}
-        <TouchableHighlight
-        style={styles.button}
-        onPress={() => this.setState({auth: 'none', role: 'none', loadScreen: menu.button1})}
-        >
-          <Text style={styles.buttonText}>Выйти</Text>
-        </TouchableHighlight>
         <MainMenu onPressMenu={this.onPressMenu}/>
       </View>
       );
@@ -686,16 +680,4 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
   },
-  button: {
-    height: '5%',
-    backgroundColor: colors.grey,
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 5
-  },
-  buttonText: {
-      fontSize: 12,
-      fontWeight: 'bold',
-      color: 'white'
-  }
 });

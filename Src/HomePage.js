@@ -21,8 +21,9 @@ export default class HomePage extends Component {
           <View
             style={{
                 height: 1,
-                width: "100%",
+                width: "90%",
                 backgroundColor: colors.grey,
+                marginLeft: '5%'
             }}
           />
         );
@@ -36,8 +37,8 @@ export default class HomePage extends Component {
         this.props.onClickModal();
     }
 
-    prepareCalendar = () => {
-        this.props.getCalendarMarks();
+    prepareCalendar = async () => {
+        await this.props.getCalendarMarks();
         this.props.onClickCalendar();
     }
 
@@ -159,10 +160,10 @@ class AddTrainingModal extends Component {
     formatDateAndTime = () => {
         const date = this.props.tmp.date;
         const today = new Date();
-        const formatDateToday = `${this.map(today.getDate())}.${this.map(today.getMonth())}.${today.getFullYear()}`;
+        const formatDateToday = `${this.map(today.getDate())}.${this.map(today.getMonth() + 1)}.${today.getFullYear()}`;
         const formatTimeToday = `${this.map(today.getHours())}:${this.map(today.getMinutes())}`;
         if (date) {
-            return `${this.map(date.getDate())}.${this.map(date.getMonth())}.${this.map(date.getFullYear())} ${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
+            return `${this.map(date.getDate())}.${this.map(date.getMonth() + 1)}.${this.map(date.getFullYear())} ${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
         }
         return `${formatDateToday} ${formatTimeToday}`;
     }
@@ -175,8 +176,8 @@ class AddTrainingModal extends Component {
         return (
         <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
             <View style={styles.modalWrapper}>
-                <Text>Добавить тренировку</Text>
-                <Text>Группа:</Text>
+                <Text style={styles.titleText}>Добавить тренировку</Text>
+                <Text style={styles.titleText}>Группа:</Text>
                 <Picker
                 style={{ width: 200 }}
                 selectedValue={!this.props.tmp.groupId ? 'Ololo' : this.props.tmp.groupId}
@@ -185,7 +186,7 @@ class AddTrainingModal extends Component {
                 >
                 {pickGroup}
                 </Picker>
-                <Text>Тренер:</Text>
+                <Text style={styles.titleText}>Тренер:</Text>
                 <Picker
                 style={{ width: 200 }}
                 selectedValue={!this.props.tmp.trainerId ? 'Ololo' : this.props.tmp.trainerId}
@@ -194,19 +195,30 @@ class AddTrainingModal extends Component {
                 >
                 {pickTrainer}
                 </Picker>
-                <Text>Дата и время:</Text>
-                <Button                   
-                    onPress={() => this.showAndroidDatePicker()}
-                    title={`${this.formatDateAndTime()} установить`}
-                />
-                <Button 
-                onPress={() => this.props.addTraining()}
-                title="Сохранить"
-                />
-                <Button 
-                onPress={() => this.props.onClickModal()}
-                title="Отмена"
-                />
+                <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                    <Text style={styles.titleText}>Дата и время:</Text>
+                    <TouchableHighlight
+                    onPress={() =>this.showAndroidDatePicker()}
+                    >
+                    <Image 
+                    source={require('./images/ic_action_access_time.png')}/>
+                    </TouchableHighlight>
+                </View>
+                <Text style={styles.cellText}>{this.formatDateAndTime()}</Text>
+                <View style={{flexDirection: 'row', width: '80%', justifyContent: 'space-around'}}>
+                    <TouchableHighlight
+                    onPress={() =>this.props.addTraining()}
+                    >
+                    <Image 
+                    source={require('./images/ic_action_check_circle_outline.png')}/>
+                    </TouchableHighlight>
+                    <TouchableHighlight
+                    onPress={() =>this.props.onClickModal()}
+                    >
+                    <Image 
+                    source={require('./images/ic_action_highlight_off.png')}/>
+                    </TouchableHighlight>
+                </View>
             </View>
         </Modal>
         );
@@ -223,14 +235,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: colors.orange,
-        height: '10%'
+        height: 50
     },
     top: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: colors.grey,
-        height: '5%'
+        height: 30
     },
     container: {
         flex: 1,
@@ -253,16 +265,17 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     modalWrapper: {
-        flex: 0.75,
         flexDirection: 'column',
         justifyContent: 'space-around',
         alignItems: 'center',
-        borderWidth: 1,
-        backgroundColor: 'skyblue',
-        marginTop: 100,
-        opacity: 1,
-        //width: 400,
-        //height: 400
+        borderWidth: 3,
+        borderRadius: 10,
+        backgroundColor: 'white',
+        borderColor: colors.grey,
+        marginTop: 80,
+        marginLeft: '10%',
+        width: '80%',
+        height: '60%'
     },
     titleText: {
         fontSize: 18,
@@ -283,6 +296,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         right: 20,
-        bottom: 10,
+        bottom: 20,
       },
+      button: {
+        height: 30,
+        width: '85%',
+        backgroundColor: colors.grey,
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: 5
+      },
+      buttonText: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: 'white'
+      }
 });

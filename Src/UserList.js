@@ -7,9 +7,9 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, TextInput, Modal, TouchableHighlight, FlatList, Picker } from 'react-native';
+import {Button, StyleSheet, Text, View, TextInput, Modal, TouchableHighlight, FlatList, Picker, TouchableOpacity, Image } from 'react-native';
 
-import {userRoles} from './const.js';
+import {userRoles, colors} from './const.js';
 
 export default class UserList extends Component {
     addUserWithDefaultRole = () => {
@@ -22,8 +22,9 @@ export default class UserList extends Component {
           <View
             style={{
                 height: 1,
-                width: "100%",
-                backgroundColor: "black",
+                width: "90%",
+                backgroundColor: colors.grey,
+                marginLeft: '5%'
             }}
           />
         );
@@ -33,21 +34,22 @@ export default class UserList extends Component {
         return (
             <View style={styles.wrapper}>
                 <View style={styles.title}>
-                    <Text>Список пользователей</Text>
+                    <Text style={styles.titleText}>Список пользователей</Text>
                 </View>
                 <View style={styles.top}>
-                    <View style={styles.cell}><Text>Пользователь</Text></View>
-                    <View style={styles.cell}><Text>Роль</Text></View>
+                    <View style={styles.cell}><Text style={styles.topText}>Пользователь</Text></View>
+                    <View style={styles.cell}><Text style={styles.topText}>Роль</Text></View>
                 </View>
                 <View>
                     <FlatList
+                    style={{height: '80%'}}
                     data={this.props.userList}
                     renderItem={({item}) => {
                     return (
                     <TouchableHighlight onPress={() => this.props.onPressUser(item.id)}>
                         <View style={styles.container}>
-                        <View style={styles.cell}><Text>{item.name}</Text></View>
-                        <View style={styles.cell}><Text>{item.role}</Text></View>
+                        <View style={styles.cell}><Text style={styles.cellText}>{item.name}</Text></View>
+                        <View style={styles.cell}><Text style={styles.cellText}>{item.role}</Text></View>
                         </View>
                     </TouchableHighlight>
                     );
@@ -55,11 +57,16 @@ export default class UserList extends Component {
                     keyExtractor={(item, index) => index.toString()}
                     ItemSeparatorComponent={this.renderSeparator}
                     />
+                    <TouchableOpacity
+                    activeOpacity={0.5}
+                    style={styles.TouchableOpacityStyle}
+                    onPress={() => this.addUserWithDefaultRole()}
+                    >
+                    <Image 
+                    source={require('./images/ic_action_control_point.png')}
+                    />
+                    </TouchableOpacity>
                 </View>
-                <Button
-                onPress={() => this.addUserWithDefaultRole()}
-                title="Добавить"
-                />
                 <AddUserModal 
                 display={this.props.display} 
                 onClickModal={this.props.onClickModal} 
@@ -100,14 +107,20 @@ class AddUserModal extends Component {
                     secureTextEntry={true} 
                     placeholder='password' 
                     onChangeText={(text) => this.props.onEnterField(text, 'openPassword')}/>
-                    <Button 
-                    onPress={() => this.props.addUser()}
-                    title="Сохранить"
-                    />
-                    <Button 
-                    onPress={() => this.props.onClickModal()}
-                    title="Отмена"
-                    />
+                    <View style={{flexDirection: 'row', width: '80%', justifyContent: 'space-around'}}>
+                        <TouchableHighlight
+                        onPress={() => this.props.addUser()}
+                        >
+                        <Image 
+                        source={require('./images/ic_action_check_circle_outline.png')}/>
+                        </TouchableHighlight>
+                        <TouchableHighlight
+                        onPress={() =>this.props.onClickModal()}
+                        >
+                        <Image 
+                        source={require('./images/ic_action_highlight_off.png')}/>
+                        </TouchableHighlight>
+                    </View>
                 </View>
             </Modal>
         );
@@ -121,37 +134,72 @@ const styles = StyleSheet.create({
     },
     title: {
         flexDirection: 'row',
-        justifyContent: 'center',
-        backgroundColor: 'yellow'
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        backgroundColor: colors.orange,
+        height: 50
     },
     top: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: 'pink'
+        alignItems: 'center',
+        backgroundColor: colors.grey,
+        height: 30
     },
     container: {
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: 'powderblue',
+        backgroundColor: 'white',
     },
     cell: {
-        flex: 0.33,
+        flex: 0.5,
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        height: 50
+    },
+    cellText: {
+        fontSize: 16,
+        color: colors.grey,
+        textAlign: 'center',
+        fontWeight: 'bold'
     },
     modalWrapper: {
-        //flex: 0.35,
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         alignItems: 'center',
-        borderWidth: 1,
-        backgroundColor: 'skyblue',
-        marginTop: 150,
-        opacity: 1,
+        borderWidth: 3,
+        borderRadius: 10,
+        backgroundColor: 'white',
+        borderColor: colors.grey,
+        marginTop: 80,
+        marginLeft: '10%',
+        width: '80%',
+        height: '60%'
     },
+    titleText: {
+        fontSize: 18,
+        color: colors.grey,
+        textAlign: 'center',
+        fontWeight: 'bold'
+    },
+    topText: {
+        fontSize: 16,
+        color: 'white',
+        textAlign: 'center',
+        fontWeight: 'bold'
+    },
+    TouchableOpacityStyle:{
+        position: 'absolute',
+        width: 50,
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+        right: 20,
+        bottom: 20,
+      },
     itemStyle: {
         fontSize: 15,
         height: 75,
