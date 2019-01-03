@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         right: 20,
         bottom: 20,
-      },
+    },
       button: {
         height: 30,
         width: '85%',
@@ -305,10 +305,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         margin: 5
-      },
+    },
       buttonText: {
           fontSize: 18,
           fontWeight: 'bold',
           color: 'white'
-      }
+    }
 });

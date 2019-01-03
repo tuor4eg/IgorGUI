@@ -15,6 +15,7 @@ import MainMenu from './Src/MainMenu.js';
 import HomePage from './Src/HomePage.js';
 import GroupList from './Src/GroupList.js';
 import GroupForm from './Src/GroupForm.js';
+import GroupFormCreate from './Src/GroupFormCreate.js';
 import UserList from './Src/UserList.js';
 import StudentList from './Src/StudentList.js';
 import StudentForm from './Src/StudentForm.js';
@@ -442,6 +443,15 @@ onPressGroup = async (id) => {
   this.setState({loadScreen: id});
 }
 
+onPressAddGroup = async () => {
+  await this.getUserList();
+  this.setState({loadScreen: {'group': 'new'}, showModal: true});
+}
+
+cancelAddGroup = () => {
+  this.setState({tmp: {}, loadScreen: menu.button2, showModal: false});
+}
+
 onPressEditGroup = async (id) => {
   await this.getUserList();
   const [getGroup] = this.state.groupList.filter(item => item.groups_id === id);
@@ -526,14 +536,12 @@ onPressMenu = async (name) => {
   renderGroupList = () => {
     return(
       <GroupList 
-      groupList={this.state.groupList} 
-      onClickModal={this.onClickModal} 
-      display={this.state.showModal} 
+      groupList={this.state.groupList}
       onEnterField={this.onEnterField} 
       tmp={this.state.tmp}
       userList={this.state.userList}
       getUserList={this.getUserList}
-      addGroup={this.addGroup}
+      onPressAddGroup={this.onPressAddGroup}
       onPressGroup={this.onPressGroup}/>
     );
   }
@@ -546,7 +554,20 @@ onPressMenu = async (name) => {
     onEnterField={this.onEnterField}
     userList={this.state.userList}/>
    );
- }
+  };
+
+  renderGroupFormCreate = () => {
+    return(
+      <GroupFormCreate
+      onEnterField={this.onEnterField} 
+      tmp={this.state.tmp}
+      userList={this.state.userList}
+      addGroup={this.addGroup}
+      cancelAddGroup={this.cancelAddGroup}
+      />
+    );
+  }
+
   renderStudentForm = () => {
     return(
       <StudentForm
@@ -626,19 +647,20 @@ onPressMenu = async (name) => {
 
   renderScreen = () => {
     //shitcode need to rewrite ABSOLUTELY!
-    if (this.state.loadScreen.student) {
+    const loadScreen = this.state.loadScreen;
+    if (loadScreen.student) {
       return this.renderStudentForm();
     }
-    if (this.state.loadScreen.user) {
+    if (loadScreen.user) {
       return this.renderUserForm();
     }
-    if (this.state.loadScreen.group) {
-      return this.renderGroupForm();
+    if (loadScreen.group) {
+      return loadScreen.group === 'new' ? this.renderGroupFormCreate() : this.renderGroupForm();
     }
-    if (this.state.loadScreen.training) {
+    if (loadScreen.training) {
       return this.renderTrainingForm();
     }
-    switch(this.state.loadScreen) {
+    switch(loadScreen) {
       case(menu.button1):
         return this.renderHomePage();
       case(menu.button2):
@@ -650,7 +672,7 @@ onPressMenu = async (name) => {
             <SetupForm />
           );
       default:
-        return this.renderStudentList(this.state.loadScreen);
+        return this.renderStudentList(loadScreen);
     }
   }
 
@@ -660,10 +682,11 @@ onPressMenu = async (name) => {
     if (this.state.auth === 'none') {
       return(this.renderAuthForm());
     }
+    const hideMenu = this.state.showModal ? null : <MainMenu onPressMenu={this.onPressMenu}/>;
     return(
       <View style={styles.overwrapper}>
         {this.renderScreen()}
-        <MainMenu onPressMenu={this.onPressMenu}/>
+        {hideMenu}
       </View>
       );
   }

@@ -55,21 +55,13 @@ export default class GroupList extends Component {
                     <TouchableOpacity
                     activeOpacity={0.5}
                     style={styles.TouchableOpacityStyle}
-                    onPress={() => this.props.onClickModal()}
+                    onPress={() => this.props.onPressAddGroup()}
                     >
                     <Image 
                     source={require('./images/ic_action_control_point.png')}
                     />
                     </TouchableOpacity>
                 </View>
-                <AddGroupModal 
-                display={this.props.display} 
-                onClickModal={this.props.onClickModal} 
-                onEnterField={this.props.onEnterField} 
-                tmp={this.props.tmp}
-                userList={this.props.userList}
-                addGroup={this.props.addGroup}
-                title="Добавить группу"/>
             </View>
         );
     }
