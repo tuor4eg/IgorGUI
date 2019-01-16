@@ -15,12 +15,13 @@ import MainMenu from './Src/MainMenu.js';
 import HomePage from './Src/HomePage.js';
 import GroupList from './Src/GroupList.js';
 import GroupForm from './Src/GroupForm.js';
-import GroupFormCreate from './Src/GroupFormCreate.js';
 import UserList from './Src/UserList.js';
 import StudentList from './Src/StudentList.js';
 import StudentForm from './Src/StudentForm.js';
 import UserForm from './Src/UserForm.js';
+import UserFormCreate from './Src/UserFormCreate.js';
 import SetupForm from './Src/SetupForm.js';
+import CashFlowList from './Src/CashFlowList.js';
 import TrainingForm from './Src/TrainingForm.js';
 //Import Constants
 import * as consts from './Src/const.js';
@@ -51,6 +52,7 @@ export default class App extends Component {
     cashflows: [],
     //navigation
     loadScreen: menu.button1,
+    button: menu.button1,
     loading: false,
     showModal: false,
     showCalendar: false,
@@ -209,7 +211,7 @@ getGroupList = async () => {
 
 addGroup = async () => {
   const {groupName, groupTrainer} = this.state.tmp;
-  const trainerId = groupTrainer ? groupTrainer.id : this.state.userList[0].id;
+  const trainerId = groupTrainer ? groupTrainer : this.state.userList[0].id;
   if (!groupName) {
     Alert.alert('Введите название!');
     return;
@@ -218,18 +220,18 @@ addGroup = async () => {
   try {
     await api.addGroup({groupName, trainerId});
     await this.getGroupList();
-    this.setState({loading: false});
+    await this.setState({loading: false});
   }
   catch(error) {
     this.setState({loading: false, error });
   }
-  this.setState({tmp: {}});
+  this.setState({tmp: {}, loadScreen: menu.button2});
   this.onClickModal();
 }
 
 //==Adding student==
 
-addStudent = async (id) => {
+addStudent = async (groupId) => {
   const {studentName} = this.state.tmp;
   if (!studentName) {
     Alert.alert('Введите имя!');
@@ -237,8 +239,8 @@ addStudent = async (id) => {
   }
   this.setState({loading: true});
   try {
-    await api.addStudent({id, studentName});
-    await this.getStudentList(id);
+    await api.addStudent({groupId, studentName});
+    await this.getStudentList(groupId);
     this.setState({loading: false})
   }
   catch(error) {
@@ -321,13 +323,14 @@ deleteGroup = async (id) => {
 
 editGroup = async () => {
   const {groupId, groupName, trainerId} = this.state.tmp;
-  if (!groupName) {
+  if (!groupName || groupName === '') {
     Alert.alert('Введите имя!');
     return;
   }
   this.setState({loading: true});
   try {
     await api.editGroup({groupId, groupName, trainerId});
+    await this.getGroupList();
     await this.getStudentList(groupId);
     this.setState({loading: false});
   }
@@ -369,8 +372,7 @@ addTraining =  async() => {
   catch(error) {
     this.setState({loading: false, error });
   }
-  this.setState({tmp: {}});
-  this.onClickModal();
+  this.setState({tmp: {}, loadScreen: menu.button1, showModal: false});
 }
 
 editTraining = async () => {
@@ -445,17 +447,26 @@ onPressGroup = async (id) => {
 
 onPressAddGroup = async () => {
   await this.getUserList();
-  this.setState({loadScreen: {'group': 'new'}, showModal: true});
+  const trainerId = this.state.userList[0].id
+  this.setState({loadScreen: {'group': 'new'}, showModal: true, tmp:{trainerId, 'groupId': 'new'}});
 }
 
-cancelAddGroup = () => {
-  this.setState({tmp: {}, loadScreen: menu.button2, showModal: false});
+onPressAddUser = async () => {
+  this.setState({loadScreen: {'user': 'new'}, showModal: true, tmp: {'id': 'new'}});
+}
+
+cancelAddGroup = (id) => {
+  return id === 'new' ? this.setState({tmp: {}, loadScreen: menu.button2, showModal: false}) : this.setState({tmp: {}, loadScreen: id, showModal: false});
+}
+
+cancelAddUser = () => {
+  this.setState({tmp: {}, loadScreen: menu.button3, showModal: false});
 }
 
 onPressEditGroup = async (id) => {
   await this.getUserList();
   const [getGroup] = this.state.groupList.filter(item => item.groups_id === id);
-  this.setState({loadScreen: {'group': id}, tmp: {'groupId': id, 'groupName': getGroup.groups_name, 'trainerId': getGroup.users_id}})
+  this.setState({loadScreen: {'group': id}, tmp: {'groupId': id, 'groupName': getGroup.groups_name, 'trainerId': getGroup.users_id}, showModal: true})
 }
 
 onPressUser = async (id) => {
@@ -466,7 +477,15 @@ onPressUser = async (id) => {
 
 onPressStudent = async (id, name, groupId) => {
   await this.getGroupList();
-  this.setState({loadScreen: {'student': id}, tmp: {'studentName': name, 'groupId': groupId}});
+  this.setState({loadScreen: {'student': id}, tmp: {'studentName': name, groupId, id}});
+}
+
+onPressAddStudent = async (groupId) => {
+  this.setState({loadScreen: {'student': 'new'}, showModal: true, tmp: {'id': 'new', groupId}});
+}
+
+cancelAddStudent = (groupId) => {
+  this.setState({tmp: {}, loadScreen: groupId, showModal: false});
 }
 
 onPressTraining = async (id) => {
@@ -474,7 +493,7 @@ onPressTraining = async (id) => {
   const {training_date, group_name, trainer_id, trainer_name, groups_id} = getTraining;
   await this.getUserList();
   await this.getCashFlows(id);
-  this.setState({loadScreen: {'training': id}, tmp: {
+  this.setState({loadScreen: {'cashflows': id}, tmp: {
     'id': id,
     'groupId': groups_id, 
     'trainerId': trainer_id, 
@@ -483,6 +502,22 @@ onPressTraining = async (id) => {
     'date': new Date(training_date),
     'cashflows': []
   }});
+}
+
+onPressAddTraining = async () => {
+  await this.getUserList();
+  await this.getGroupList();
+  const trainerId = this.state.userList[0].id;
+  const groupId = this.state.groupList[0].id;
+  this.setState({loadScreen: {'training': 'new'}, showModal: true, tmp: {'id': 'new', groupId, trainerId}});
+}
+
+cancelAddTraining = () => {
+  this.setState({tmp: {}, loadScreen: menu.button1, showModal: false});
+}
+
+onPressExit = () => {
+  this.setState({auth: 'none', role: 'none'});
 }
 
 //=====Main menu actions=====
@@ -499,7 +534,7 @@ onPressMenu = async (name) => {
       await this.getUserList();
       break;
   }
-  this.setState({loadScreen: name, tmp: {}});
+  this.setState({loadScreen: name, button: name, tmp: {}});
   if (this.state.showModal) {
     this.onClickModal();
   }
@@ -520,6 +555,7 @@ onPressMenu = async (name) => {
     return (
       <StudentList
       deleteGroup={this.deleteGroup}
+      onPressMenu={this.onPressMenu}
       onPressEditGroup={this.onPressEditGroup}
       groupId={id}
       studentList={this.state.studentList}
@@ -529,6 +565,7 @@ onPressMenu = async (name) => {
       display={this.state.showModal}
       addStudent={this.addStudent}
       onPressStudent={this.onPressStudent}
+      onPressAddStudent={this.onPressAddStudent}
       />
     );
   }
@@ -542,28 +579,33 @@ onPressMenu = async (name) => {
       userList={this.state.userList}
       getUserList={this.getUserList}
       onPressAddGroup={this.onPressAddGroup}
-      onPressGroup={this.onPressGroup}/>
+      onPressGroup={this.onPressGroup}
+      getGroupList={this.getGroupList}
+      loading={this.state.loading}/>
     );
   }
 
   renderGroupForm = () => {
    return (
     <GroupForm
+    addGroup={this.addGroup}
+    cancelAddGroup={this.cancelAddGroup}
     editGroup={this.editGroup}
     tmp={this.state.tmp}
     onEnterField={this.onEnterField}
-    userList={this.state.userList}/>
+    userList={this.state.userList}
+    />
    );
   };
 
-  renderGroupFormCreate = () => {
+  renderUserFormCreate = () => {
     return(
-      <GroupFormCreate
+      <UserFormCreate
       onEnterField={this.onEnterField} 
       tmp={this.state.tmp}
       userList={this.state.userList}
-      addGroup={this.addGroup}
-      cancelAddGroup={this.cancelAddGroup}
+      addUser={this.addUser}
+      cancelAddUser={this.cancelAddUser}
       />
     );
   }
@@ -571,12 +613,14 @@ onPressMenu = async (name) => {
   renderStudentForm = () => {
     return(
       <StudentForm
-      studentId={this.state.loadScreen.student}
       editStudent={this.editStudent}
+      addStudent={this.addStudent}
       deleteStudent={this.deleteStudent}
       onEnterField={this.onEnterField}
       tmp={this.state.tmp}
-      groupList={this.state.groupList}/>
+      groupList={this.state.groupList}
+      cancelAddStudent={this.cancelAddStudent}
+      />
     );
   }
 
@@ -587,6 +631,8 @@ onPressMenu = async (name) => {
       onEnterField={this.onEnterField}
       editUser={this.editUser}
       deleteUser={this.deleteUser}
+      addUser={this.addUser}
+      cancelAddUser={this.cancelAddUser}
       />
     );
   }
@@ -600,7 +646,8 @@ onPressMenu = async (name) => {
       tmp={this.state.tmp}
       addUser={this.addUser}
       userList={this.state.userList}
-      onPressUser={this.onPressUser}/>
+      onPressUser={this.onPressUser}
+      onPressAddUser={this.onPressAddUser}/>
     );
   }
 
@@ -624,14 +671,14 @@ onPressMenu = async (name) => {
       getGroupList={this.getGroupList}
       getUserList={this.getUserList}
       getTrainingList={this.getTrainingList}
-      addTraining={this.addTraining}
+      onPressAddTraining={this.onPressAddTraining}
       onPressTraining={this.onPressTraining}/>
     );
   }
 
-  renderTrainingForm = () => {
+  renderCashFlowList = () => {
     return (
-      <TrainingForm
+      <CashFlowList
       cashflows={this.state.cashflows}
       onClickModal={this.onClickModal}
       display={this.state.showModal}
@@ -641,6 +688,21 @@ onPressMenu = async (name) => {
       onChangeArray={this.onChangeArray}
       tmp={this.state.tmp}
       onEnterField={this.onEnterField}
+      />
+    );
+  }
+
+  renderTrainingForm = () => {
+    return(
+      <TrainingForm
+      tmp={this.state.tmp}
+      onEnterField={this.onEnterField}
+      addTraining={this.addTraining}
+      editTraining={this.editTraining}
+      groupList={this.state.groupList}
+      userList={this.state.userList}
+      cancelTraining={this.cancelTraining}
+      cancelAddTraining={this.cancelAddTraining}
       />
     );
   }
@@ -655,7 +717,10 @@ onPressMenu = async (name) => {
       return this.renderUserForm();
     }
     if (loadScreen.group) {
-      return loadScreen.group === 'new' ? this.renderGroupFormCreate() : this.renderGroupForm();
+      return this.renderGroupForm();
+    }
+    if (loadScreen.cashflows) {
+      return this.renderCashFlowList();
     }
     if (loadScreen.training) {
       return this.renderTrainingForm();
@@ -669,7 +734,8 @@ onPressMenu = async (name) => {
         return this.renderUserList();
       case(menu.button4):
           return(
-            <SetupForm />
+            <SetupForm 
+            onPressExit={this.onPressExit}/>
           );
       default:
         return this.renderStudentList(loadScreen);
@@ -682,7 +748,7 @@ onPressMenu = async (name) => {
     if (this.state.auth === 'none') {
       return(this.renderAuthForm());
     }
-    const hideMenu = this.state.showModal ? null : <MainMenu onPressMenu={this.onPressMenu}/>;
+    const hideMenu = this.state.showModal ? null : <MainMenu onPressMenu={this.onPressMenu} button={this.state.button}/>;
     return(
       <View style={styles.overwrapper}>
         {this.renderScreen()}
@@ -696,7 +762,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     flexDirection: 'column',
-    //justifyContent: 'flex-start',
   },
   overwrapper: {
     flex: 1,

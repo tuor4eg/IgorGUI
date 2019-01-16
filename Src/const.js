@@ -7,10 +7,10 @@
  */
 
  export const menuButtonsList = {
-     button1: 'Home',
-     button2: 'Groups',
-     button3: 'Users',
-     button4: 'Settings'
+     button1: 'Главная',
+     button2: 'Группы',
+     button3: 'Пользователи',
+     button4: 'Настройки',
  };
 
  export const userRoles = {

@@ -20,11 +20,11 @@ export const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         backgroundColor: colors.orange,
-        height: 50,
+        height: 56,
     },
     top: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         backgroundColor: colors.grey,
         height: 30
@@ -32,27 +32,39 @@ export const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         backgroundColor: 'white',
+        height: 56
+    },
+    twoLineCell: {
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
     },
     cell: {
-        flex: 0.5,
-        flexDirection: 'column',
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        height: 50
     },
     cellText: {
         fontSize: 16,
         color: colors.grey,
-        textAlign: 'center',
-        fontWeight: 'bold'
+        textAlign: 'left',
+        fontWeight: 'bold',
+        paddingRight: 16
+    },
+    cellTextSecond: {
+        flex: 1,
+        fontSize: 14,
+        color: colors.grey,
+        textAlign: 'left',
     },
     titleText: {
+        flex: 1,
         fontSize: 18,
         color: colors.grey,
-        textAlign: 'center',
+        textAlign: 'left',
         fontWeight: 'bold'
     },
     topText: {
@@ -63,12 +75,12 @@ export const styles = StyleSheet.create({
     },
     TouchableOpacityStyle: {
         position: 'absolute',
-        width: 50,
-        height: 50,
+        width: 56,
+        height: 56,
         alignItems: 'center',
         justifyContent: 'center',
-        right: 20,
-        bottom: 20,
+        right: 16,
+        bottom: 16,
     },
     separator: {
         height: 1,
@@ -84,9 +96,52 @@ export const styles = StyleSheet.create({
         margin: 5,
         borderRadius: 10
     },
-      buttonText: {
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: 'white'
+    buttonText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: 'white'
+    },
+    textInput: {
+        fontSize: 16,
+        borderWidth: 1,
+        borderRadius: 4,
+        paddingLeft: 12
+
+    },
+    textInputLabel: {
+        fontSize: 14,
+        paddingLeft: 12,
+        paddingTop: 2
+
+    },
+    textInputField: {
+        paddingTop: 16,
+        height: 72,
+        paddingRight: 16
+    },
+    card: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+    },
+    cardInfo: {
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+    },
+    picker: {
+        width: '100%',
+        borderWidth: 1,
+        borderRadius: 4,
+    },
+    fab: {
+        height: 56, 
+        width: 56, 
+        borderRadius: 28, 
+        backgroundColor: 
+        colors.orange, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        elevation: 5
     }
 });

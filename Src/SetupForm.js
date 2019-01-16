@@ -9,25 +9,17 @@
 import React, {Component} from 'react';
 import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight } from 'react-native';
 
+import {styles} from './styles.js';
+
 export default class SetupForm extends Component {
     render() {
         return (
-            <View style={styles.container}>
+            <View style={styles.wrapper}>
                 <Text>Setup Page. There will be something. Someday. Maybe.</Text>
+                <Button 
+                title="Выйти"
+                onPress={() => this.props.onPressExit()}/>
             </View>
         );
     }
 }
-
-const styles = StyleSheet.create({
-    wrapper: {
-        flexDirection: 'row',
-    },
-    container: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'pink',
-    }
-});

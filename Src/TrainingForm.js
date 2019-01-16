@@ -1,5 +1,5 @@
 /**
- * List of students in selected group
+ * Edit selected user
  * https://github.com/tuor4eg/
  *
  * @format
@@ -7,67 +7,55 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, 
-    View, DatePickerAndroid, Picker, 
-    TouchableHighlight, FlatList, 
-    KeyboardAvoidingView, Alert, 
-    TextInput, TimePickerAndroid, Modal, CheckBox } from 'react-native';
+import {Text, View, Alert, TouchableHighlight, Image, Picker, DatePickerAndroid, TimePickerAndroid } from 'react-native';
 
-//import CheckBox from 'react-native-checkbox';
+import {styles} from './styles.js';
 
 export default class TrainingForm extends Component {
-    map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
-
-    getFormatDate = (date) => `${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
-
-    changeUser = (id) => {
-        this.props.onEnterField(id, 'trainerId');
-        const [getTrainer] = this.props.userList.filter(item => item.id === id);
-        this.props.onEnterField(getTrainer.name, 'trainerName');
-    }
-
-    askBeforeCancel = (id) => {
+    askBeforeDelete = (id) => {
         Alert.alert(
-          'Отменить тренировку',
+          'Отменить занятие',
           'Точно отменить?',
           [
             {text: 'Да', onPress: () => this.props.cancelTraining(id)},
             {text: 'Отмена'}
           ]
         )
-      }
+    }
 
-    renderSeparator = () => {
-        return (
-          <View
-            style={{
-                height: 1,
-                width: "100%",
-                backgroundColor: "black",
-            }}
-          />
-        );
-    };
+    map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
 
-    showAndroidDatePicker = async (currentDate) => {
+    formatDateAndTime = () => {
+        const date = this.props.tmp.date;
+        const today = new Date();
+        const formatDateToday = `${this.map(today.getDate())}.${this.map(today.getMonth() + 1)}.${today.getFullYear()}`;
+        const formatTimeToday = `${this.map(today.getHours())}:${this.map(today.getMinutes())}`;
+        if (date) {
+            return `${this.map(date.getDate())}.${this.map(date.getMonth() + 1)}.${this.map(date.getFullYear())} ${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
+        }
+        return `${formatDateToday} ${formatTimeToday}`;
+    }
+
+    showAndroidDatePicker = async () => {
         try {
             const {action, year, month, day} = await DatePickerAndroid.open({
-                date: currentDate
+                date: new Date()
             });
             if (action !== DatePickerAndroid.dismissedAction) {
                 const date = new Date(year, month, day);
-                this.showAndroidTimePicker(date, currentDate);
+                this.showAndroidTimePicker(date);
             }
         } catch ({code, message}) {
             console.warn('Cannot open date picker', message);
         }
     };
 
-    showAndroidTimePicker = async (date, oldDate) => {
+    showAndroidTimePicker = async (date) => {
+        const today = new Date();
         try {
             const {action, hour, minute} = await TimePickerAndroid.open({
-              hour: oldDate.getHours(),
-              minute: oldDate.getMinutes(),
+              hour: today.getHours(),
+              minute: today.getMinutes(),
               is24Hour: true,
             });
             if (action !== TimePickerAndroid.dismissedAction) {
@@ -79,183 +67,104 @@ export default class TrainingForm extends Component {
           }
     }
 
-    onChangeSum = (value, id, key) => !isNaN(Number(value)) ? this.props.onChangeArray(value, id, key) : Alert.alert("Введите число!");
-
-    prepareNotice = (text) => {
-        if (!text) {
-            return '...'
-        }
-        return text.length > 10 ? `${text.substring(0, 9)}...` : text;
-    }
-
-    getNoticeModal = (id) => {
-        this.props.onEnterField(id, 'student_id');
-        this.props.onClickModal();
-    }
-
-    render() {
-        const tmp = this.props.tmp;
+    renderTrainerPicker() {
         const userList = this.props.userList;
-        const cashflows = this.props.cashflows;
-        const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth() + 1}.${tmp.date.getFullYear()}`;
-        const pick = userList.map(item => <Picker.Item label={item.name} value={item.id} backgroundColor='pink' key={item.id.toString()}/>);
-        const counter = cashflows.reduce((acc, item) => {
-            const totalCount = item.checkbox ? acc[0] + 1 : acc[0];
-            const totalSum = item.sum ? acc[1] + 1 : acc[1];
-            return [totalCount, totalSum];
-        }, [0, 0]);
+        const pick = userList.map(item => <Picker.Item label={item.name} value={item.id} key={item.id.toString()}/>);
+        return pick;
+    }
 
-        return (
+    renderGroupPicker() {
+        const groupList = this.props.groupList;
+        const pick = groupList.map(item => <Picker.Item label={item.groups_name} value={item.groups_id} key={item.groups_id.toString()}/>);
+        return pick;
+    }
+
+    checkTitle = () => this.props.tmp.id === 'new' ? 'Добавить занятие' : 'Изменить занятие';
+
+    checkAction = () => this.props.tmp.id === 'new' ? () => this.props.addTraining() : () => this.props.editTraining();
+
+    checkForDelete = () => {
+        if (this.props.tmp.id === 'new') {
+            return null;
+        }
+        return(
+            <TouchableHighlight
+            style={{paddingRight: 16}}
+            onPress={() => this.askBeforeDelete(this.props.tmp.id)}
+            >
+                <Image 
+                source={require('./images/ic_action_delete.png')}
+                />
+            </TouchableHighlight>
+        );
+    }
+    
+    render() {
+        return(
             <View style={styles.wrapper}>
-            <KeyboardAvoidingView behavior='position' enabled>
                 <View style={styles.title}>
-                    <Text>Тренировка группы {tmp.groupName} {dateToString} {this.getFormatDate(tmp.date)}</Text>
+                    <TouchableHighlight
+                    style={{paddingLeft: 16, paddingRight: 24}}
+                        onPress={() => this.props.cancelAddTraining()}
+                    >
+                        <Image 
+                        source={require('./images/ic_action_arrow_back.png')}/>
+                    </TouchableHighlight>
+                    <Text style={styles.titleText}>{this.checkTitle()}</Text>
+                    <TouchableHighlight
+                    style={{paddingRight: 16}}
+                    onPress={this.checkAction()}
+                    >
+                        <Image 
+                        source={require('./images/ic_action_check.png')}
+                        />
+                    </TouchableHighlight>
+                    {this.checkForDelete()}
                 </View>
-                <View style={styles.top}>
-                    <View style={styles.cell}><Text>Отметка</Text></View>
-                    <View style={styles.cell}><Text>ФИО участника</Text></View>
-                    <View style={styles.cell}><Text>Сумма</Text></View>
-                    <View style={styles.cell}><Text>Примечание</Text></View>
-                </View>
-                <View>
-                    <FlatList
-                    style={styles.scrolling}
-                    data={cashflows.map(i => i)}
-                    renderItem={({item}) => {
-                    return (
-                    <TouchableHighlight onPress={() => this.getNoticeModal(item.id)}>
-                        <View style={styles.container}>
-                            <View style={styles.cell}>
-                                <CheckBox
-                                label=''
-                                value={!item.checkbox ? false : item.checkbox === 0 ? false : true}
-                                onValueChange={(value) => this.props.onChangeArray(value, item.id, 'checkbox')}
+                <View style={styles.card}>
+                    <View style={{ paddingTop: 16, paddingHorizontal: 16}}>
+                        <Image source={require('./images/ic_action_directions_run_train.png')} />
+                    </View>
+                    <View style={styles.cardInfo}>
+                        <View style={[styles.textInputField, {flexDirection: 'row'}]}>
+                            <Text style={[styles.textInput, {flex: 1, paddingVertical: 16}]}>{this.formatDateAndTime()}</Text>
+                            <TouchableHighlight
+                            onPress={() =>this.showAndroidDatePicker()}>
+                                <Image
+                                source={require('./images/ic_action_access_time.png')}
                                 />
-                            </View>
-                            <View style={styles.cell}><Text>{item.name}</Text></View>
-                            <View style={styles.cell}>
-                                <TextInput 
-                                value={item.sum ? item.sum.toString() : '0'}
-                                onChangeText={(text) => this.onChangeSum(text, item.id, 'sum')} 
-                                />
-                            </View>
-                            <View style={styles.cell}>
-                                <Text>{this.prepareNotice(item.notice)}</Text>
+                            </TouchableHighlight>
+                        </View>
+                        <Text style={styles.textInputLabel}>Время и дата</Text>
+                        <View style={styles.textInputField}>
+                            <View style={styles.picker}>
+                            <Picker
+                            style={{width: '100%'}}
+                            selectedValue={this.props.tmp.groupId}
+                            onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'groupId')}
+                            keyExtractor={(item, index) => index.toString()}
+                            >
+                            {this.renderGroupPicker()}
+                            </Picker>
                             </View>
                         </View>
-                    </TouchableHighlight>
-                    );
-                    }}
-                    keyExtractor={(item, index) => index.toString()}
-                    ItemSeparatorComponent={this.renderSeparator}
-                    />
+                        <Text style={styles.textInputLabel}>Группа</Text>
+                        <View style={styles.textInputField}>
+                            <View style={styles.picker}>
+                            <Picker
+                            style={{width: '100%'}}
+                            selectedValue={this.props.tmp.trainerId}
+                            onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'trainerId')}
+                            keyExtractor={(item, index) => index.toString()}
+                            >
+                            {this.renderTrainerPicker()}
+                            </Picker>
+                            </View>
+                        </View>
+                        <Text style={styles.textInputLabel}>Тренер</Text>
+                    </View>
                 </View>
-                <View style={styles.top}>
-                    <Text>Всего участников: {counter[0]}</Text>
-                    <Text>Итого, руб.: {counter[1]}</Text>
-                </View>
-                <View style={styles.top}>
-                    <Text>Тренер</Text>
-                    <Picker
-                    style={{ width: 200 }}
-                    selectedValue={!this.props.tmp.trainerId ? 'Ololo' : this.props.tmp.trainerId}
-                    onValueChange={(itemValue, itemIndex) => this.changeUser(itemValue)}
-                    keyExtractor={(item, index) => index.toString()}
-                    >
-                    {pick}
-                    </Picker>
-                </View>
-                <Button
-                    onPress={() => this.showAndroidDatePicker(tmp.date)}
-                    title="Изменить дату и время"
-                />
-                <Button
-                    onPress={() => this.props.editTraining()}
-                    title="Сохранить изменения"
-                />
-                <Button
-                    onPress={() => this.askBeforeCancel(this.props.tmp.id)}
-                    title="Отменить тренировку"
-                />
-                <AddNoticeModal 
-                display={this.props.display}
-                tmp={this.props.tmp}
-                onClickModal={this.props.onClickModal}
-                onEnterField={this.props.onEnterField}
-                onChangeArray={this.props.onChangeArray}
-                />
-                </KeyboardAvoidingView>
             </View>
         );
     }
 }
-
-class AddNoticeModal extends Component {
-    onEnterNotice = (text, id) => {
-        this.props.onChangeArray(text, id, 'notice');
-        this.props.onClickModal();
-    }
-
-    render() {
-        return (
-            <Modal visible={this.props.display} animationType = "slide" onRequestClose={ () => console.log('closed')} transparent={true}>
-                <View style={styles.modalWrapper}>
-                    <Text>Добавить примечание</Text>
-                    <TextInput placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'notice')}/>
-                    <Button 
-                    onPress={() => this.onEnterNotice(this.props.tmp.notice, this.props.tmp.student_id)}
-                    title="Сохранить"
-                    />
-                    <Button 
-                    onPress={() => this.props.onClickModal()}
-                    title="Отмена"
-                    />
-                </View>
-            </Modal>
-        );
-    }
-}
-
-const styles = StyleSheet.create({
-    wrapper: {
-        flexDirection: 'column',
-        flex: 1
-    },
-    title: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        backgroundColor: 'yellow'
-    },
-    top: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        backgroundColor: 'pink'
-    },
-    container: {
-        //flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        backgroundColor: 'powderblue',
-    },
-    cell: {
-        flex: 0.25,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalWrapper: {
-        flex: 0.35,
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderWidth: 1,
-        backgroundColor: 'skyblue',
-        marginTop: 150,
-        opacity: 1,
-    },
-    scrolling: {
-        height: '65%'
-    },
-});

@@ -7,13 +7,11 @@
  */
 
 import React, {Component} from 'react';
-import {Image, StyleSheet, Text, View, Alert, TextInput, TouchableHighlight, FlatList, Picker } from 'react-native';
+import {Image, Text, View, TextInput, TouchableHighlight, Picker } from 'react-native';
 
-import {colors} from './const.js';
 import {styles} from './styles.js';
 
 export default class GroupFormCreate extends Component {
-    getTrainerId = (array, name) => array.filter(item => item.name === name);
 
     renderSeparator = () => {
         return (
@@ -23,46 +21,54 @@ export default class GroupFormCreate extends Component {
         );
     };
 
+    
+
     render() {
         const userList = this.props.userList;
-        const pick = userList.map(item => <Picker.Item label={item.name} value={item.name} backgroundColor='pink' key={item.id.toString()}/>);
+        const pick = userList.map(item => <Picker.Item label={item.name} value={item.id} backgroundColor='pink' key={item.id.toString()}/>);
         return(
             <View style={styles.wrapper}>
                 <View style={styles.title}>
                     <TouchableHighlight
-                    style={{paddingLeft: '5%'}}
+                    style={{paddingLeft: 16, paddingRight: 24}}
                         onPress={() => this.props.cancelAddGroup()}
                     >
                         <Image 
                         source={require('./images/ic_action_arrow_back.png')}/>
                     </TouchableHighlight>
-                    <Text style={[styles.titleText, {paddingLeft: '15%'}]}>Добавить группу</Text>
-                </View>
-                <View style={styles.top}>
-                    <Text style={styles.topText}>Название:</Text>
-                </View>
-                <TextInput style={styles.cellText} placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'groupName')}/>
-                <View style={styles.top}>
-                    <Text style={styles.topText}>Тренер:</Text>
-                </View>
-                <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-                <Picker
-                style={{ width: 200 }}
-                selectedValue={!this.props.tmp.groupTrainer ? 'Ololo' : this.props.tmp.groupTrainer.name}
-                onValueChange={(itemValue, itemIndex) => this.props.onEnterField(this.getTrainerId(userList, itemValue)[0], 'groupTrainer')}
-                keyExtractor={(item, index) => index.toString()}
-                >
-                {pick}
-                </Picker>
-                </View>
-                {this.renderSeparator()}
-                <View style={{flexDirection: 'row', justifyContent: 'center', marginTop: '5%'}}>
+                    <Text style={styles.titleText}>Добавить группу</Text>
                     <TouchableHighlight
-                    style={[styles.button, {width: '30%'}]}
+                    style={{paddingRight: 16}}
                     onPress={() => this.props.addGroup()}
                     >
-                        <Text style={styles.buttonText}>OK</Text>
+                        <Image 
+                        source={require('./images/ic_action_check.png')}
+                        />
                     </TouchableHighlight>
+                </View>
+                <View style={styles.card}>
+                    <View style={{ paddingTop: 16, paddingHorizontal: 16}}>
+                        <Image source={require('./images/ic_action_supervised_user_circle.png')} />
+                    </View>
+                    <View style={styles.cardInfo}>
+                        <View style={styles.textInputField}>
+                            <TextInput style={styles.textInput} placeholder='...' onChangeText={(text) => this.props.onEnterField(text, 'groupName')}/>
+                        </View>
+                        <Text style={styles.textInputLabel}>Название</Text>
+                        <View style={styles.textInputField}>
+                            <View style={styles.picker}>
+                                <Picker
+                                style={{width: '100%'}}
+                                selectedValue={!this.props.tmp.groupTrainer ? 'Ololo' : this.props.tmp.groupTrainer}
+                                onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'groupTrainer')}
+                                keyExtractor={(item, index) => index.toString()}
+                                >
+                                {pick}
+                                </Picker>
+                            </View>
+                        </View>
+                        <Text style={styles.textInputLabel}>Тренер</Text>
+                    </View>
                 </View>
             </View>
         );

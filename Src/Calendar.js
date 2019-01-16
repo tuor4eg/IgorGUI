@@ -39,7 +39,7 @@ export default class CalendarForm extends Component {
           }
           return  {...acc, [element]: {dots: [oneTraining, twoTrainings, threeMore], selected: true, selectedColor: colors.grey}};
         }, {});
-        console.log(makeMarks);
+        
         return (
           <View>
             <Calendar
