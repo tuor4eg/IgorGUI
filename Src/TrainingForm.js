@@ -1,5 +1,5 @@
 /**
- * Edit selected user
+ * Create/edit trainings
  * https://github.com/tuor4eg/
  *
  * @format
@@ -128,7 +128,7 @@ export default class TrainingForm extends Component {
                     <View style={styles.cardInfo}>
                         <View style={[styles.textInputField, {flexDirection: 'row'}]}>
                             <Text style={[styles.textInput, {flex: 1, paddingVertical: 16}]}>{this.formatDateAndTime()}</Text>
-                            <TouchableHighlight
+                            <TouchableHighlight style={{paddingLeft:16}}
                             onPress={() =>this.showAndroidDatePicker()}>
                                 <Image
                                 source={require('./images/ic_action_access_time.png')}

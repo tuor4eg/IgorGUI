@@ -7,11 +7,17 @@
  */
 
 import React, {Component} from 'react';
-import {Button, StyleSheet, Text, 
+import {Button, Text, 
     View, DatePickerAndroid, Picker, 
     TouchableHighlight, FlatList, 
     KeyboardAvoidingView, Alert, 
-    TextInput, TimePickerAndroid, Modal, CheckBox } from 'react-native';
+    TextInput, TimePickerAndroid, Modal, CheckBox , Image} from 'react-native';
+
+import {styles} from './styles.js';
+import {menuButtonsList} from './const.js';
+
+import iconNoticeEmpty from './images/ic_cashflow_note_empty.png';
+import iconNoticeFull from './images/ic_cashflow_note_full.png';
 
 //import CheckBox from 'react-native-checkbox';
 
@@ -19,6 +25,12 @@ export default class CashFlowList extends Component {
     map = digit => digit.toString().length >= 2 ? digit : `0${digit}`;
 
     getFormatDate = (date) => `${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
+
+    checkNotice = (item) => item.notice ? iconNoticeFull : iconNoticeEmpty;
+
+    checkSum = (item) => item.sum ? item.sum.toString() : '0';
+
+    checkCheckBox = (item) => !item.checkbox ? false : item.checkbox === 0 ? false : true;
 
     changeUser = (id) => {
         this.props.onEnterField(id, 'trainerId');
@@ -40,11 +52,7 @@ export default class CashFlowList extends Component {
     renderSeparator = () => {
         return (
           <View
-            style={{
-                height: 1,
-                width: "100%",
-                backgroundColor: "black",
-            }}
+            style={styles.separator}
           />
         );
     };
@@ -93,7 +101,81 @@ export default class CashFlowList extends Component {
         this.props.onClickModal();
     }
 
-    render() {
+    renderNew() {
+        const tmp = this.props.tmp;
+        const userList = this.props.userList;
+        const cashflows = this.props.cashflows;
+        console.log(cashflows)
+        const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth() + 1}.${tmp.date.getFullYear()}`;
+        return(
+            <View style={styles.wrapper}>
+                <View style={styles.title}>
+                <TouchableHighlight
+                    style={{paddingLeft: 16, paddingRight: 24}}
+                        onPress={() => this.props.onPressMenu(menuButtonsList.button1)}
+                    >
+                        <Image 
+                        source={require('./images/ic_action_arrow_back.png')}/>
+                    </TouchableHighlight>
+                    <Text style={styles.titleText}>Группа {tmp.groupName}, {this.getFormatDate(tmp.date)}</Text>
+                    <TouchableHighlight
+                    style={{paddingRight: 24}}
+                    onPress={() => this.props.onPressEditTraining(tmp.id)}
+                    >
+                        <Image 
+                        source={require('./images/ic_action_mode_edit.png')}
+                        />
+                    </TouchableHighlight>
+                    <TouchableHighlight
+                    style={{paddingRight: 16}}
+                    onPress={() => this.askBeforeCancel(tmp.id)}
+                    >
+                        <Image 
+                        source={require('./images/ic_action_delete.png')}
+                        />
+                    </TouchableHighlight>
+                </View>
+                <View>
+                    <FlatList
+                    style={{height: '90%'}}
+                    data={cashflows.map(i => i)}
+                    renderItem={({item}) => {
+                    return (
+                    <TouchableHighlight onPress={() => this.props.onPressGroup(item.groups_id)}>
+                        <View style={[styles.container, {height: 72}]}>
+                            <View style={{paddingLeft: 16, paddingRight: 24}}>
+                                <Image
+                                source={require('./images/ic_action_account_circle.png')}
+                                />
+                            </View>
+                            <View style={[styles.twoLineCell, {flex: 1}]}>
+                                <Text style={[styles.cellText, {paddingTop: 16}]}>{item.name}</Text>
+                                <Text style={styles.cellTextSecond}>{this.checkSum(item)} руб.</Text>
+                            </View>
+                            <View style={{paddingHorizontal: 16}}>
+                                <Image
+                                source={this.checkNotice(item)}/>
+                            </View>
+                            <View style={{paddingHorizontal: 16}}>
+                                <CheckBox
+                                label=''
+                                value={this.checkCheckBox(item)}
+                                onValueChange={(value) => this.props.onChangeArray(value, item.id, 'checkbox')}
+                                />
+                            </View>
+                        </View>
+                    </TouchableHighlight>
+                    );
+                    }}
+                    keyExtractor={(item, index) => index.toString()}
+                    ItemSeparatorComponent={this.renderSeparator}
+                    />
+                </View>
+            </View>
+        );
+    }
+
+    renderOld() {
         const tmp = this.props.tmp;
         const userList = this.props.userList;
         const cashflows = this.props.cashflows;
@@ -188,6 +270,10 @@ export default class CashFlowList extends Component {
             </View>
         );
     }
+
+    render() {
+        return this.renderNew();
+    }
 }
 
 class AddNoticeModal extends Component {
@@ -215,47 +301,3 @@ class AddNoticeModal extends Component {
         );
     }
 }
-
-const styles = StyleSheet.create({
-    wrapper: {
-        flexDirection: 'column',
-        flex: 1
-    },
-    title: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        backgroundColor: 'yellow'
-    },
-    top: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        backgroundColor: 'pink'
-    },
-    container: {
-        //flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        backgroundColor: 'powderblue',
-    },
-    cell: {
-        flex: 0.25,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalWrapper: {
-        flex: 0.35,
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderWidth: 1,
-        backgroundColor: 'skyblue',
-        marginTop: 150,
-        opacity: 1,
-    },
-    scrolling: {
-        height: '65%'
-    },
-});

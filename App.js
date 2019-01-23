@@ -688,6 +688,7 @@ onPressMenu = async (name) => {
       onChangeArray={this.onChangeArray}
       tmp={this.state.tmp}
       onEnterField={this.onEnterField}
+      onPressMenu={this.onPressMenu}
       />
     );
   }
