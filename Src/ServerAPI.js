@@ -7,313 +7,311 @@
  */
 
 const query = {
-    user: {
-        auth: '/user/auth',
-        list: '/user/list',
-        add: '/user/add',
-        edit: '/user'
-    },
-    group: {
-        list: '/group/list',
-        add: '/group/add',
-        edit: '/group'
-    },
-    student: {
-        add: '/student/add',
-        edit: '/student'
-    },
-    training: {
-        list: '/training/list',
-        add: '/training/add',
-        edit: '/training',
-        marks: '/training/marks'
-    },
-    cashflows: {
-        list: '/cashflows/list',
-        add: '/cachflows/add',
-        edit: '/cashflows/edit'
-    }
-}
+  user: {
+    auth: '/user/auth',
+    list: '/user/list',
+    add: '/user/add',
+    edit: '/user',
+  },
+  group: {
+    list: '/group/list',
+    add: '/group/add',
+    edit: '/group',
+  },
+  student: {
+    add: '/student/add',
+    edit: '/student',
+  },
+  training: {
+    list: '/training/list',
+    add: '/training/add',
+    edit: '/training',
+    marks: '/training/marks',
+  },
+  cashflows: {
+    list: '/cashflows/list',
+    add: '/cachflows/add',
+    edit: '/cashflows/edit',
+  },
+};
 
 export default class ServerApi {
-    constructor(host, token) {
-        this.host = host;
-        this.token = token;
+  constructor(host, token) {
+    this.host = host;
+    this.token = token;
+  }
+
+  //= ====User's section=====
+
+  async authUser(user) {
+    const res = await fetch(`${this.host}${query.user.auth}`, {
+      method: 'POST',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    });
+    if (res.status !== 200) {
+      return res.status;
     }
+    const response = await res.json();
+    return response;
+  }
 
-//=====User's section=====
+  async getUserList() {
+    const res = await fetch(`${this.host}${query.user.list}`, {
+      method: 'GET',
+      headers: {
+        token: this.token,
+      },
+    });
+    const userList = await res.json();
+    return userList;
+  }
 
-    async authUser(user) {
-        const res = await fetch(`${this.host}${query.user.auth}`, {
-            method: 'POST',
-            headers: {
-              'token': this.token,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(user)
-        });
-        if (res.status !== 200) {
-            return res.status;
-        }
-        const response = await res.json();
-        return response;
-    }
+  async addUser(data) {
+    const res = await fetch(`${this.host}${query.user.add}`, {
+      method: 'POST',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return res.status;
+  }
 
-    async getUserList() {
-        const res = await fetch(`${this.host}${query.user.list}`, {
-            method: 'GET',
-            headers: {
-              'token': this.token,
-            },
-        });
-        const userList = await res.json();
-        return userList;
-    }
+  async editUser(data) {
+    const res = await fetch(`${this.host}${query.user.edit}/${data.id}`, {
+      method: 'PATCH',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return res.status;
+  }
 
-    async addUser(data) {
-        const res = await fetch(`${this.host}${query.user.add}`, {
-            method: 'POST',
-            headers: {
-              'token': this.token,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-           });
-        return res.status;
-    }
+  async deleteUser(id) {
+    const res = await fetch(`${this.host}${query.user.edit}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        token: this.token,
+      },
+    });
+    return res.status;
+  }
 
-    async editUser(data) {
-        const res = await fetch(`${this.host}${query.user.edit}/${data.id}`, {
-            method: 'PATCH',
-            headers: {
-              'token': this.token,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-           });
-           return res.status;
-    }
+  //= ====Group's section=====
 
-    async deleteUser(id) {
-        const res = await fetch(`${this.host}${query.user.edit}/${id}`, {
-            method: 'DELETE',
-            headers: {
-            'token': this.token
-            }
-        });
-        return res.status;
-    }
+  //= =Get list of groups==
 
-//=====Group's section=====
+  async getGroupList() {
+    const res = await fetch(`${this.host}${query.group.list}`, {
+      method: 'GET',
+      headers: {
+        token: this.token,
+      },
+    });
+    const groupList = await res.json();
+    return groupList;
+  }
 
-//==Get list of groups==
+  //= =Add group to database==
 
-    async getGroupList() {
-        const res = await fetch(`${this.host}${query.group.list}`, {
-            method: 'GET',
-            headers: {
-              'token': this.token,
-            },
-        });
-        const groupList = await res.json();
-        return groupList;
-    }
+  async addGroup(data) {
+    const res = await fetch(`${this.host}${query.group.add}`, {
+      method: 'POST',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-//==Add group to database==
+  async editGroup(data) {
+    const res = await fetch(`${this.host}${query.group.edit}/${data.groupId}`, {
+      method: 'PATCH',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-    async addGroup(data) {
-        const res = await fetch(`${this.host}${query.group.add}`, {
-            method: 'POST',
-            headers: {
-              'token': this.token,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-           });
-        const answer = await res.text();
-        return answer;
-    }
+  async deleteGroup(id) {
+    const res = await fetch(`${this.host}${query.group.edit}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        token: this.token,
+      },
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-    async editGroup(data) {
-        const res = await fetch(`${this.host}${query.group.edit}/${data.groupId}`, {
-            method: 'PATCH',
-            headers: {
-            'token': this.token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        const answer = await res.text();
-        return answer;
-    }
+  //= ====Student's section=====
 
+  //= =Show group's students==
 
-    async deleteGroup(id) {
-        const res = await fetch(`${this.host}${query.group.edit}/${id}`, {
-            method: 'DELETE',
-            headers: {
-            'token': this.token
-            }
-        });
-        const answer = await res.text();
-        return answer;
-    }
+  async getStudentList(id) {
+    const res = await fetch(`${this.host}${query.group.list}/${id}`, {
+      method: 'GET',
+      headers: {
+        token: this.token,
+      },
+    });
+    const studentList = await res.json();
+    return studentList;
+  }
 
-//=====Student's section=====
+  //= =Add student into group==
 
-//==Show group's students==
+  async addStudent(data) {
+    const res = await fetch(`${this.host}${query.student.add}/${data.id}`, {
+      method: 'POST',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-    async getStudentList(id) {
-        const res = await fetch(`${this.host}${query.group.list}/${id}`, {
-            method: 'GET',
-            headers: {
-                'token': this.token,
-            },
-        });
-        const studentList = await res.json();
-        return studentList;
-    }
+  //= =Edit student==
 
-//==Add student into group==
+  async editStudent(data) {
+    const res = await fetch(`${this.host}${query.student.edit}/${data.id}`, {
+      method: 'PATCH',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-    async addStudent(data) {
-        const res = await fetch(`${this.host}${query.student.add}/${data.id}`, {
-            method: 'POST',
-            headers: {
-            'token': this.token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        const answer = await res.text();
-        return answer;
-    }
+  //= =Delete student==
 
-//==Edit student==
+  async deleteStudent(id) {
+    const res = await fetch(`${this.host}${query.student.edit}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        token: this.token,
+      },
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-    async editStudent(data) {
-        const res = await fetch(`${this.host}${query.student.edit}/${data.id}`, {
-            method: 'PATCH',
-            headers: {
-            'token': this.token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        const answer = await res.text();
-        return answer;
-    }
+  //= ====Training sectios=====
 
-//==Delete student==
+  async getTrainingList(firstDate, lastDate, statement) {
+    const res = await fetch(`${this.host}${query.training.list}`, {
+      method: 'GET',
+      headers: {
+        token: this.token,
+        firstDate: firstDate || 'none',
+        lastDate: lastDate || 'none',
+        statement: statement || 'none',
+      },
+    });
+    const trainingList = await res.json();
+    return trainingList;
+  }
 
-    async deleteStudent(id) {
-        const res = await fetch(`${this.host}${query.student.edit}/${id}`, {
-            method: 'DELETE',
-            headers: {
-            'token': this.token
-            }
-        });
-        const answer = await res.text();
-        return answer;
-    }
+  async addTraining(data) {
+    const res = await fetch(`${this.host}${query.training.add}`, {
+      method: 'POST',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-//=====Training sectios=====
+  async editTraining(data) {
+    const { groupId, date, trainerId } = data;
+    const res = await fetch(`${this.host}${query.training.edit}/${data.id}`, {
+      method: 'PATCH',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ groupId, trainerId, date: date.toString() }),
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-    async getTrainingList(firstDate, lastDate, statement) {
-        const res = await fetch(`${this.host}${query.training.list}`, {
-            method: 'GET',
-            headers: {
-                'token': this.token,
-                'firstDate': firstDate ? firstDate : 'none',
-                'lastDate': lastDate ? lastDate : 'none',
-                'statement': statement? statement : 'none'
-            },
-        });
-        const trainingList = await res.json();
-        return trainingList;
-    }
+  async cancelTraining(id) {
+    const res = await fetch(`${this.host}${query.training.edit}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        token: this.token,
+      },
+    });
+    const answer = await res.text();
+    return answer;
+  }
 
-    async addTraining(data) {
-        const res = await fetch(`${this.host}${query.training.add}`, {
-            method: 'POST',
-            headers: {
-            'token': this.token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        const answer = await res.text();
-        return answer;
-    }
+  async getCalendarMarks() {
+    const res = await fetch(`${this.host}${query.training.marks}`, {
+      method: 'GET',
+      headers: {
+        token: this.token,
+      },
+    });
+    const marks = await res.json();
+    return marks;
+  }
 
-    async editTraining(data) {
-        const {groupId, date, trainerId} = data;
-        const res = await fetch(`${this.host}${query.training.edit}/${data.id}`, {
-            method: 'PATCH',
-            headers: {
-            'token': this.token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({groupId, trainerId, 'date': date.toString()})
-        });
-        const answer = await res.text();
-        return answer;
-    }
+  async getCashFlows(id) {
+    const res = await fetch(`${this.host}${query.cashflows.list}/${id}`, {
+      method: 'GET',
+      headers: {
+        token: this.token,
+      },
+    });
+    const cashFlows = await res.json();
+    return cashFlows;
+  }
 
-    async cancelTraining(id) {
-        const res = await fetch(`${this.host}${query.training.edit}/${id}`, {
-            method: 'DELETE',
-            headers: {
-            'token': this.token
-            }
-        });
-        const answer = await res.text();
-        return answer;
-    }
-
-    async getCalendarMarks() {
-        const res = await fetch(`${this.host}${query.training.marks}`, {
-            method: 'GET',
-            headers: {
-                'token': this.token,
-            },
-        });
-        const marks = await res.json();
-        return marks;
-    }
-
-    async getCashFlows(id) {
-        const res = await fetch(`${this.host}${query.cashflows.list}/${id}`, {
-            method: 'GET',
-            headers: {
-                'token': this.token,
-            },
-        });
-        const cashFlows = await res.json();
-        return cashFlows;
-    }
-
-    async returnCashFlows(data, id) {
-        const res = await fetch(`${this.host}${query.cashflows.edit}/${id}`, {
-            method: 'POST',
-            headers: {
-            'token': this.token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        const answer = await res.text();
-        return answer;
-    }
-
+  async returnCashFlows(data, id) {
+    const res = await fetch(`${this.host}${query.cashflows.edit}/${id}`, {
+      method: 'POST',
+      headers: {
+        token: this.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    const answer = await res.text();
+    return answer;
+  }
 }

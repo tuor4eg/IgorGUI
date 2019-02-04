@@ -6,65 +6,117 @@
  * @flow
  */
 
-import React, {Component} from 'react';
-import {View, Text} from 'react-native';
-import { Calendar, CalendarList, Agenda, LocaleConfig } from 'react-native-calendars';
+import React, { Component } from 'react';
+import { View, Text } from 'react-native';
+import {
+  Calendar, LocaleConfig,
+} from 'react-native-calendars';
 
-import {colors} from './const.js';
+import { colors } from './const';
 
-LocaleConfig.locales['ru'] = {
-    monthNames: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
-    monthNamesShort: ['Янв.','Февр.','Март','Апр.','Май','Июнь','Июль','Авг.','Сент.','Окт.','Нояб.','Дек.'],
-    dayNames: ['Воскресенье', 'Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'],
-    dayNamesShort: ['Вс', 'Пн.','Вт.','Ср.','Чт.','Пт.','Сб.']
-  };
-  
-  LocaleConfig.defaultLocale = 'ru';
+LocaleConfig.locales.ru = {
+  monthNames: [
+    'Январь',
+    'Февраль',
+    'Март',
+    'Апрель',
+    'Май',
+    'Июнь',
+    'Июль',
+    'Август',
+    'Сентябрь',
+    'Октябрь',
+    'Ноябрь',
+    'Декабрь',
+  ],
+  monthNamesShort: [
+    'Янв.',
+    'Февр.',
+    'Март',
+    'Апр.',
+    'Май',
+    'Июнь',
+    'Июль',
+    'Авг.',
+    'Сент.',
+    'Окт.',
+    'Нояб.',
+    'Дек.',
+  ],
+  dayNames: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+  dayNamesShort: ['Вс', 'Пн.', 'Вт.', 'Ср.', 'Чт.', 'Пт.', 'Сб.'],
+};
+
+LocaleConfig.defaultLocale = 'ru';
+
+
+const oneTraining = { key: 'oneTraining', color: 'white', selectedDotColor: 'white' };
+const twoTrainings = { key: 'twoTrainings', color: 'white', selectedDotColor: 'white' };
+const threeMore = { key: 'threeMore', color: 'white' };
 
 export default class CalendarForm extends Component {
-    selectDate = async (date) => {
-      await this.props.changeDate(date);
-      await this.props.getTrainingList(this.props.firstDate, this.props.lastDate);
-      this.props.onClickCalendar();
-    }
+  selectDate = async (date) => {
+    await this.props.changeDate(date);
+    await this.props.getTrainingList(this.props.firstDate, this.props.lastDate);
+    this.props.onClickCalendar();
+  };
 
-    render() {
-        const calendarMarks = this.props.calendarMarks;
-        const makeMarks = Object.keys(calendarMarks).reduce((acc, element) => {
-          if (calendarMarks[element] === 1) {
-            return {...acc, [element]: {dots: [oneTraining], selected: true, selectedColor: colors.grey}}
+  render() {
+    const calendarMarks = this.props.calendarMarks;
+    const makeMarks = Object.keys(calendarMarks).reduce((acc, element) => {
+      if (calendarMarks[element] === 1) {
+        return {
+          ...acc,
+          [element]: { dots: [oneTraining], selected: true, selectedColor: colors.grey },
+        };
+      }
+      if (calendarMarks[element] === 2) {
+        return {
+          ...acc,
+          [element]: {
+            dots: [oneTraining, twoTrainings],
+            selected: true,
+            selectedColor: colors.grey,
+          },
+        };
+      }
+      return {
+        ...acc,
+        [element]: {
+          dots: [oneTraining, twoTrainings, threeMore],
+          selected: true,
+          selectedColor: colors.grey,
+        },
+      };
+    }, {});
+
+    return (
+      <View>
+        <Calendar
+          current={new Date(this.props.firstDate)}
+          onDayPress={day => this.selectDate(day.timestamp)}
+          onDayLongPress={(day) => {
+            console.log('selected day', day);
+          }}
+          monthFormat="yyyy MM"
+          onMonthChange={(month) => {
+            console.log('month changed', month);
+          }}
+          hideArrows={false}
+          renderArrow={direction => (direction === 'left' ? <Text>назад</Text> : <Text>вперед</Text>)
           }
-          if (calendarMarks[element] === 2) {
-            return {...acc, [element]: {dots: [oneTraining, twoTrainings], selected: true, selectedColor: colors.grey}}
-          }
-          return  {...acc, [element]: {dots: [oneTraining, twoTrainings, threeMore], selected: true, selectedColor: colors.grey}};
-        }, {});
-        
-        return (
-          <View>
-            <Calendar
-            current={new Date(this.props.firstDate)}
-            onDayPress={(day) => this.selectDate(day.timestamp)}
-            onDayLongPress={(day) => {console.log('selected day', day)}}
-            monthFormat={'yyyy MM'}
-            onMonthChange={(month) => {console.log('month changed', month)}}
-            hideArrows={false}
-            renderArrow={(direction) => direction === 'left' ? <Text>назад</Text> : <Text>вперед</Text>}
-            hideExtraDays={false}
-            disableMonthChange={false}
-            firstDay={1}
-            hideDayNames={false}
-            showWeekNumbers={true}
-            onPressArrowLeft={substractMonth => substractMonth()}
-            onPressArrowRight={addMonth => addMonth()}
-            markedDates={makeMarks}
-            markingType={'multi-dot'}
-            />
-          </View>
-        );
-    }
+          hideExtraDays={false}
+          disableMonthChange={false}
+          firstDay={1}
+          hideDayNames={false}
+          showWeekNumbers
+          onPressArrowLeft={substractMonth => substractMonth()}
+          onPressArrowRight={addMonth => addMonth()}
+          markedDates={makeMarks}
+          markingType="multi-dot"
+        />
+      </View>
+    );
+  }
 }
 
-const oneTraining = {key:'oneTraining', color: 'white', selectedDotColor: 'white'};
-const twoTrainings = {key:'twoTrainings', color: 'white', selectedDotColor: 'white'};
-const threeMore = {key:'threeMore', color: 'white'};

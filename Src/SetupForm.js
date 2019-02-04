@@ -6,20 +6,26 @@
  * @flow
  */
 
-import React, {Component} from 'react';
-import {Button, StyleSheet, Text, View, Alert, ScrollView, TouchableHighlight } from 'react-native';
+import React, { Component } from 'react';
+import {
+  Button,
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+  ScrollView,
+  TouchableHighlight,
+} from 'react-native';
 
-import {styles} from './styles.js';
+import styles from './styles';
 
 export default class SetupForm extends Component {
-    render() {
-        return (
-            <View style={styles.wrapper}>
-                <Text>Setup Page. There will be something. Someday. Maybe.</Text>
-                <Button 
-                title="Выйти"
-                onPress={() => this.props.onPressExit()}/>
-            </View>
-        );
-    }
+  render() {
+    return (
+      <View style={styles.wrapper}>
+        <Text>Setup Page. There will be something. Someday. Maybe.</Text>
+        <Button title="Выйти" onPress={() => this.props.onPressExit()} />
+      </View>
+    );
+  }
 }
