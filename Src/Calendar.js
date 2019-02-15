@@ -8,9 +8,8 @@
 
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
-import {
-  Calendar, LocaleConfig,
-} from 'react-native-calendars';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+import PropTypes from 'prop-types';
 
 import { colors } from './const';
 
@@ -49,20 +48,18 @@ LocaleConfig.locales.ru = {
 
 LocaleConfig.defaultLocale = 'ru';
 
-
 const oneTraining = { key: 'oneTraining', color: 'white', selectedDotColor: 'white' };
 const twoTrainings = { key: 'twoTrainings', color: 'white', selectedDotColor: 'white' };
 const threeMore = { key: 'threeMore', color: 'white' };
 
 export default class CalendarForm extends Component {
   selectDate = async (date) => {
-    await this.props.changeDate(date);
-    await this.props.getTrainingList(this.props.firstDate, this.props.lastDate);
-    this.props.onClickCalendar();
+    const { changeDate } = this.props;
+    changeDate(date);
   };
 
   render() {
-    const calendarMarks = this.props.calendarMarks;
+    const { calendarMarks, firstDate } = this.props;
     const makeMarks = Object.keys(calendarMarks).reduce((acc, element) => {
       if (calendarMarks[element] === 1) {
         return {
@@ -89,11 +86,10 @@ export default class CalendarForm extends Component {
         },
       };
     }, {});
-
     return (
       <View>
         <Calendar
-          current={new Date(this.props.firstDate)}
+          current={new Date(firstDate)}
           onDayPress={day => this.selectDate(day.timestamp)}
           onDayLongPress={(day) => {
             console.log('selected day', day);
@@ -120,3 +116,11 @@ export default class CalendarForm extends Component {
   }
 }
 
+CalendarForm.propTypes = {
+  changeDate: PropTypes.func.isRequired,
+  onClickCalendar: PropTypes.func.isRequired,
+  getTrainingList: PropTypes.func.isRequired,
+  firstDate: PropTypes.number.isRequired,
+  lastDate: PropTypes.number.isRequired,
+  calendarMarks: PropTypes.instanceOf(Object).isRequired,
+};

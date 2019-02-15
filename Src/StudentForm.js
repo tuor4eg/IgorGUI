@@ -8,80 +8,91 @@
 
 import React, { Component } from 'react';
 import {
-  Button,
-  Image,
-  Text,
-  View,
-  Alert,
-  TextInput,
-  TouchableHighlight,
-  Picker,
+  Image, Text, View, Alert, TextInput, TouchableHighlight, Picker,
 } from 'react-native';
+import PropTypes from 'prop-types';
+
+import backArrowIcon from './images/ic_action_arrow_back.png';
+import saveChangesIcon from './images/ic_action_check.png';
+import studentIcon from './images/ic_action_account_circle_user.png';
 
 import styles from './styles';
 
 export default class StudentForm extends Component {
   askBeforeDelete = (id) => {
+    const { deleteStudent } = this.props;
     Alert.alert('Удалить участника', 'Точно удалить?', [
-      { text: 'Да', onPress: () => this.props.deleteStudent(id) },
+      { text: 'Да', onPress: () => deleteStudent(id) },
       { text: 'Отмена' },
     ]);
   };
 
-  renderPicker = () => this.props.groupList.map(item => (
-    <Picker.Item
-      style={styles.container}
-      label={item.groups_name}
-      value={item.groups_id}
-      backgroundColor="pink"
-      key={item.groups_id.toString()}
-    />
-  ));
+  renderPicker = () => {
+    const { groupList } = this.props;
+    return groupList.map(item => (
+      <Picker.Item
+        style={styles.container}
+        label={item.groupName}
+        value={item.groupId}
+        backgroundColor="pink"
+        key={item.groupId.toString()}
+      />
+    ));
+  };
 
-  checkTitle = () => (this.props.tmp.id === 'new' ? 'Добавить участника' : 'Изменить участника');
+  checkTitle = () => {
+    const { tmp } = this.props;
+    const { id } = tmp;
+    return id === 'new' ? 'Добавить участника' : 'Изменить участника';
+  };
 
-  checkAction = () => (this.props.tmp.id === 'new'
-    ? () => this.props.addStudent(this.props.tmp.groupId)
-    : () => this.props.editStudent(this.props.tmp.id));
+  checkAction = () => {
+    const { tmp, addStudent, editStudent } = this.props;
+    const { id, groupId } = tmp;
+    return id === 'new' ? () => addStudent(groupId) : () => editStudent(id);
+  };
 
   checkName = () => {
-    if (this.props.tmp.id === 'new') {
+    const { tmp, onEnterField } = this.props;
+    const { id, studentName } = tmp;
+    if (id === 'new') {
       return (
         <TextInput
           style={styles.textInput}
           placeholder="..."
-          onChangeText={text => this.props.onEnterField(text, 'studentName')}
+          onChangeText={text => onEnterField(text, 'studentName')}
         />
       );
     }
     return (
       <TextInput
-        value={this.props.tmp.studentName}
+        value={studentName}
         style={styles.textInput}
-        onChangeText={text => this.props.onEnterField(text, 'studentName')}
+        onChangeText={text => onEnterField(text, 'studentName')}
       />
     );
   };
 
-  renderNew() {
-    console.log(this.props.tmp.id);
+  render() {
+    const { cancelAddStudent, onEnterField, tmp } = this.props;
+    const { groupId } = tmp;
     return (
       <View style={styles.wrapper}>
         <View style={styles.title}>
           <TouchableHighlight
             style={{ paddingLeft: 16, paddingRight: 24 }}
-            onPress={() => this.props.cancelAddStudent(this.props.tmp.groupId)}
+            onPress={() => cancelAddStudent(groupId)}
           >
-            <Image source={require('./images/ic_action_arrow_back.png')} />
+            <Image source={backArrowIcon} />
           </TouchableHighlight>
           <Text style={styles.titleText}>{this.checkTitle()}</Text>
           <TouchableHighlight style={{ paddingRight: 16 }} onPress={this.checkAction()}>
-            <Image source={require('./images/ic_action_check.png')} />
+            <Image source={saveChangesIcon} />
           </TouchableHighlight>
         </View>
         <View style={styles.card}>
           <View style={{ paddingTop: 16, paddingHorizontal: 16 }}>
-            <Image source={require('./images/ic_action_account_circle_user.png')} />
+            <Image source={studentIcon} />
           </View>
           <View style={styles.cardInfo}>
             <View style={styles.textInputField}>{this.checkName()}</View>
@@ -90,9 +101,8 @@ export default class StudentForm extends Component {
               <View style={styles.picker}>
                 <Picker
                   style={{ width: '100%' }}
-                  selectedValue={this.props.tmp.groupId}
-                  onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'groupId')
-                  }
+                  selectedValue={groupId}
+                  onValueChange={itemValue => onEnterField(itemValue, 'groupId')}
                   keyExtractor={(item, index) => index.toString()}
                 >
                   {this.renderPicker()}
@@ -105,38 +115,34 @@ export default class StudentForm extends Component {
       </View>
     );
   }
-
-  renderOld() {
-    return (
-      <View style={styles.wrapper}>
-        <View style={styles.title}>
-          <Text>Изменить участника</Text>
-        </View>
-        <View style={styles.top}>
-          <Text>ФИО</Text>
-          <Text>Группа</Text>
-        </View>
-        <View style={styles.container}>
-          <TextInput
-            value={this.props.tmp.studentName}
-            style={styles.container}
-            onChangeText={text => this.props.onEnterField(text, 'studentName')}
-          />
-          <Picker
-            style={{ width: 150 }}
-            selectedValue={this.props.tmp.groupId}
-            onValueChange={(itemValue, itemIndex) => this.props.onEnterField(itemValue, 'groupId')}
-          >
-            {this.renderPicker()}
-          </Picker>
-        </View>
-        <Button onPress={() => this.props.editStudent(this.props.studentId)} title="Сохранить" />
-        <Button onPress={() => this.askBeforeDelete(this.props.studentId)} title="Удалить" />
-      </View>
-    );
-  }
-
-  render() {
-    return this.renderNew();
-  }
 }
+
+StudentForm.propTypes = {
+  onEnterField: PropTypes.func.isRequired,
+  deleteStudent: PropTypes.func.isRequired,
+  addStudent: PropTypes.func.isRequired,
+  editStudent: PropTypes.func.isRequired,
+  cancelAddStudent: PropTypes.func.isRequired,
+  groupList: PropTypes.arrayOf(PropTypes.shape({
+    userid: PropTypes.number,
+    userName: PropTypes.string,
+    groupId: PropTypes.number,
+    groupName: PropTypes.string,
+  })),
+  tmp: PropTypes.shape({
+    id: PropTypes.oneOfType([
+      PropTypes.number,
+      PropTypes.string,
+    ]),
+    groupId: PropTypes.number.isRequired,
+    studentName: PropTypes.string,
+  }),
+};
+
+StudentForm.defaultProps = {
+  groupList: [],
+  tmp: PropTypes.shape({
+    id: 'new',
+    studentName: null,
+  }),
+};

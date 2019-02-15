@@ -11,20 +11,22 @@ import {
   Text, View, TouchableHighlight, FlatList, TouchableOpacity, Image,
 } from 'react-native';
 
+import groupIcon from './images/ic_group.png';
+
 import styles from './styles';
 
 export default class GroupList extends Component {
   renderSeparator = () => <View style={styles.separator} />;
 
   renderItem = ({ item }) => (
-    <TouchableHighlight onPress={() => this.props.onPressGroup(item.groups_id)}>
+    <TouchableHighlight onPress={() => this.props.onPressGroup(item.groupId)}>
       <View style={[styles.container, { height: 72 }]}>
         <View style={{ paddingLeft: 16, paddingRight: 24 }}>
-          <Image source={require('./images/ic_action_supervised_user_circle.png')} />
+          <Image source={groupIcon} />
         </View>
         <View style={styles.twoLineCell}>
-          <Text style={[styles.cellText, { paddingTop: 16 }]}>{item.groups_name}</Text>
-          <Text style={styles.cellTextSecond}>{item.users_name}</Text>
+          <Text style={[styles.cellText, { paddingTop: 16 }]}>{item.groupName}</Text>
+          <Text style={styles.cellTextSecond}>{item.userName}</Text>
         </View>
       </View>
     </TouchableHighlight>

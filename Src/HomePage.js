@@ -43,6 +43,7 @@ export default class HomePage extends Component {
     const {
       firstDate, trainingList, onPressTraining, onPressAddTraining,
     } = this.props;
+    console.log(trainingList);
     const today = new Date(firstDate);
     const formatDateToday = `${this.map(today.getDate())}.${this.map(
       today.getMonth() + 1,

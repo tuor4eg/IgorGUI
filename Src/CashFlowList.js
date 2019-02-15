@@ -8,50 +8,48 @@
 
 import React, { Component } from 'react';
 import {
-  Button,
   Text,
   View,
   DatePickerAndroid,
-  Picker,
   TouchableHighlight,
   FlatList,
-  KeyboardAvoidingView,
   Alert,
-  TextInput,
   TimePickerAndroid,
-  Modal,
-  CheckBox,
   Image,
 } from 'react-native';
+import PropTypes from 'prop-types';
 
 import styles from './styles';
 import { menuButtonsList } from './const';
 
-import iconNoticeEmpty from './images/ic_cashflow_note_empty.png';
-import iconNoticeFull from './images/ic_cashflow_note_full.png';
-
-// import CheckBox from 'react-native-checkbox';
+import noticeEmptyIcon from './images/ic_cashflow_note_empty.png';
+import noticeFullIcon from './images/ic_cashflow_note_full.png';
+import backArrowIcon from './images/ic_action_arrow_back.png';
+import editTrainingIcon from './images/ic_action_mode_edit.png';
+import cancelTrainingIcon from './images/ic_action_delete.png';
+import userIcon from './images/ic_action_account_circle.png';
+import checkedIcon from './images/ic_checkbox_true.png';
 
 export default class CashFlowList extends Component {
   map = digit => (digit.toString().length >= 2 ? digit : `0${digit}`);
 
   getFormatDate = date => `${this.map(date.getHours())}:${this.map(date.getMinutes())}`;
 
-  checkNotice = item => (item.notice ? iconNoticeFull : iconNoticeEmpty);
+  checkNotice = item => (item.notice ? noticeFullIcon : noticeEmptyIcon);
 
   checkSum = item => (item.sum ? item.sum.toString() : '0');
 
-  checkCheckBox = item => (!item.checkbox ? false : item.checkbox !== 0);
-
-  changeUser = (id) => {
-    this.props.onEnterField(id, 'trainerId');
-    const [getTrainer] = this.props.userList.filter(item => item.id === id);
-    this.props.onEnterField(getTrainer.name, 'trainerName');
+  checkCheckBox = (item) => {
+    if (!item.checkbox || item.checkbox === 0) {
+      return null;
+    }
+    return <Image source={checkedIcon} />;
   };
 
   askBeforeCancel = (id) => {
+    const { cancelTraining } = this.props;
     Alert.alert('Отменить тренировку', 'Точно отменить?', [
-      { text: 'Да', onPress: () => this.props.cancelTraining(id) },
+      { text: 'Да', onPress: () => cancelTraining(id) },
       { text: 'Отмена' },
     ]);
   };
@@ -75,6 +73,7 @@ export default class CashFlowList extends Component {
   };
 
   showAndroidTimePicker = async (date, oldDate) => {
+    const { onEnterField } = this.props;
     try {
       const { action, hour, minute } = await TimePickerAndroid.open({
         hour: oldDate.getHours(),
@@ -89,97 +88,69 @@ export default class CashFlowList extends Component {
           hour,
           minute,
         );
-        this.props.onEnterField(dateWithTime, 'date');
+        onEnterField(dateWithTime, 'date');
       }
     } catch ({ code, message }) {
       console.warn('Cannot open time picker', message);
     }
   };
 
-  onChangeSum = (value, id, key) => (!isNaN(Number(value))
-    ? this.props.onChangeArray(value, id, key)
-    : Alert.alert('Введите число!'));
-
-  prepareNotice = (text) => {
-    if (!text) {
-      return '...';
-    }
-    return text.length > 10 ? `${text.substring(0, 9)}...` : text;
+  renderItem = ({ item }) => {
+    const { onPressCashFlow } = this.props;
+    const sumToString = `${this.checkSum(item)} руб.`;
+    return (
+      <TouchableHighlight onPress={() => onPressCashFlow(item)}>
+        <View style={[styles.container, { height: 72 }]}>
+          <View style={{ paddingLeft: 16, paddingRight: 24 }}>
+            <Image source={userIcon} />
+          </View>
+          <View style={[styles.twoLineCell, { flex: 1 }]}>
+            <Text style={[styles.cellText, { paddingTop: 16 }]}>{item.studentName}</Text>
+            <Text style={styles.cellTextSecond}>{sumToString}</Text>
+          </View>
+          <View style={{ paddingHorizontal: 16 }}>
+            <Image source={this.checkNotice(item)} />
+          </View>
+          <View style={{ paddingHorizontal: 36 }}>{this.checkCheckBox(item)}</View>
+        </View>
+      </TouchableHighlight>
+    );
   };
 
-  getNoticeModal = (id) => {
-    this.props.onEnterField(id, 'student_id');
-    this.props.onClickModal();
-  };
-
-  renderNew() {
-    const tmp = this.props.tmp;
-    const userList = this.props.userList;
-    const cashflows = this.props.cashflows;
-    const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth()
-      + 1}.${tmp.date.getFullYear()}`;
+  render() {
+    const {
+      tmp, cashflows, onPressMenu, onPressEditTraining,
+    } = this.props;
+    const { groupName, date, trainingId } = tmp;
+    const titleToString = `Группа ${groupName}, ${this.getFormatDate(date)}`;
     return (
       <View style={styles.wrapper}>
         <View style={styles.title}>
           <TouchableHighlight
             style={{ paddingLeft: 16, paddingRight: 24 }}
-            onPress={() => this.props.onPressMenu(menuButtonsList.button1)}
+            onPress={() => onPressMenu(menuButtonsList.button1)}
           >
-            <Image source={require('./images/ic_action_arrow_back.png')} />
+            <Image source={backArrowIcon} />
           </TouchableHighlight>
-          <Text style={styles.titleText}>
-            Группа
-            {' '}
-            {tmp.groupName}
-,
-            {' '}
-            {this.getFormatDate(tmp.date)}
-          </Text>
+          <Text style={styles.titleText}>{titleToString}</Text>
           <TouchableHighlight
             style={{ paddingRight: 24 }}
-            onPress={() => this.props.onPressEditTraining(tmp.id)}
+            onPress={() => onPressEditTraining(trainingId)}
           >
-            <Image source={require('./images/ic_action_mode_edit.png')} />
+            <Image source={editTrainingIcon} />
           </TouchableHighlight>
           <TouchableHighlight
             style={{ paddingRight: 16 }}
-            onPress={() => this.askBeforeCancel(tmp.id)}
+            onPress={() => this.askBeforeCancel(trainingId)}
           >
-            <Image source={require('./images/ic_action_delete.png')} />
+            <Image source={cancelTrainingIcon} />
           </TouchableHighlight>
         </View>
         <View>
           <FlatList
             style={{ height: '90%' }}
             data={cashflows.map(i => i)}
-            renderItem={({ item }) => (
-              <TouchableHighlight onPress={() => this.props.onPressGroup(item.groups_id)}>
-                <View style={[styles.container, { height: 72 }]}>
-                  <View style={{ paddingLeft: 16, paddingRight: 24 }}>
-                    <Image source={require('./images/ic_action_account_circle.png')} />
-                  </View>
-                  <View style={[styles.twoLineCell, { flex: 1 }]}>
-                    <Text style={[styles.cellText, { paddingTop: 16 }]}>{item.name}</Text>
-                    <Text style={styles.cellTextSecond}>
-                      {this.checkSum(item)}
-                      {' '}
-руб.
-                    </Text>
-                  </View>
-                  <View style={{ paddingHorizontal: 16 }}>
-                    <Image source={this.checkNotice(item)} />
-                  </View>
-                  <View style={{ paddingHorizontal: 16 }}>
-                    <CheckBox
-                      label=""
-                      value={this.checkCheckBox(item)}
-                      onValueChange={value => this.props.onChangeArray(value, item.id, 'checkbox')
-                        }
-                    />
-                  </View>
-                </View>
-              </TouchableHighlight>
-            )}
+            renderItem={this.renderItem}
             keyExtractor={(item, index) => index.toString()}
             ItemSeparatorComponent={this.renderSeparator}
           />
@@ -187,166 +158,42 @@ export default class CashFlowList extends Component {
       </View>
     );
   }
-
-  renderOld() {
-    const tmp = this.props.tmp;
-    const userList = this.props.userList;
-    const cashflows = this.props.cashflows;
-    const dateToString = `${tmp.date.getDate()}.${tmp.date.getMonth()
-      + 1}.${tmp.date.getFullYear()}`;
-    const pick = userList.map(item => (
-      <Picker.Item
-        label={item.name}
-        value={item.id}
-        backgroundColor="pink"
-        key={item.id.toString()}
-      />
-    ));
-    const counter = cashflows.reduce(
-      (acc, item) => {
-        const totalCount = item.checkbox ? acc[0] + 1 : acc[0];
-        const totalSum = item.sum ? acc[1] + 1 : acc[1];
-        return [totalCount, totalSum];
-      },
-      [0, 0],
-    );
-
-    return (
-      <View style={styles.wrapper}>
-        <KeyboardAvoidingView behavior="position" enabled>
-          <View style={styles.title}>
-            <Text>
-              Тренировка группы
-              {' '}
-              {tmp.groupName}
-              {' '}
-              {dateToString}
-              {' '}
-              {this.getFormatDate(tmp.date)}
-            </Text>
-          </View>
-          <View style={styles.top}>
-            <View style={styles.cell}>
-              <Text>Отметка</Text>
-            </View>
-            <View style={styles.cell}>
-              <Text>ФИО участника</Text>
-            </View>
-            <View style={styles.cell}>
-              <Text>Сумма</Text>
-            </View>
-            <View style={styles.cell}>
-              <Text>Примечание</Text>
-            </View>
-          </View>
-          <View>
-            <FlatList
-              style={styles.scrolling}
-              data={cashflows.map(i => i)}
-              renderItem={({ item }) => (
-                <TouchableHighlight onPress={() => this.getNoticeModal(item.id)}>
-                  <View style={styles.container}>
-                    <View style={styles.cell}>
-                      <CheckBox
-                        label=""
-                        value={!item.checkbox ? false : item.checkbox !== 0}
-                        onValueChange={value => this.props.onChangeArray(value, item.id, 'checkbox')
-                          }
-                      />
-                    </View>
-                    <View style={styles.cell}>
-                      <Text>{item.name}</Text>
-                    </View>
-                    <View style={styles.cell}>
-                      <TextInput
-                        value={item.sum ? item.sum.toString() : '0'}
-                        onChangeText={text => this.onChangeSum(text, item.id, 'sum')}
-                      />
-                    </View>
-                    <View style={styles.cell}>
-                      <Text>{this.prepareNotice(item.notice)}</Text>
-                    </View>
-                  </View>
-                </TouchableHighlight>
-              )}
-              keyExtractor={(item, index) => index.toString()}
-              ItemSeparatorComponent={this.renderSeparator}
-            />
-          </View>
-          <View style={styles.top}>
-            <Text>
-Всего участников:
-              {counter[0]}
-            </Text>
-            <Text>
-Итого, руб.:
-              {counter[1]}
-            </Text>
-          </View>
-          <View style={styles.top}>
-            <Text>Тренер</Text>
-            <Picker
-              style={{ width: 200 }}
-              selectedValue={!this.props.tmp.trainerId ? 'Ololo' : this.props.tmp.trainerId}
-              onValueChange={(itemValue, itemIndex) => this.changeUser(itemValue)}
-              keyExtractor={(item, index) => index.toString()}
-            >
-              {pick}
-            </Picker>
-          </View>
-          <Button
-            onPress={() => this.showAndroidDatePicker(tmp.date)}
-            title="Изменить дату и время"
-          />
-          <Button onPress={() => this.props.editTraining()} title="Сохранить изменения" />
-          <Button
-            onPress={() => this.askBeforeCancel(this.props.tmp.id)}
-            title="Отменить тренировку"
-          />
-          <AddNoticeModal
-            display={this.props.display}
-            tmp={this.props.tmp}
-            onClickModal={this.props.onClickModal}
-            onEnterField={this.props.onEnterField}
-            onChangeArray={this.props.onChangeArray}
-          />
-        </KeyboardAvoidingView>
-      </View>
-    );
-  }
-
-  render() {
-    return this.renderNew();
-  }
 }
 
-class AddNoticeModal extends Component {
-  onEnterNotice = (text, id) => {
-    this.props.onChangeArray(text, id, 'notice');
-    this.props.onClickModal();
-  };
+CashFlowList.propTypes = {
+  onEnterField: PropTypes.func.isRequired,
+  cancelTraining: PropTypes.func.isRequired,
+  cashflows: PropTypes.arrayOf(
+    PropTypes.shape({
+      studentId: PropTypes.number.isRequired,
+      studentName: PropTypes.string.isRequired,
+      cashId: PropTypes.number,
+      notice: PropTypes.string,
+      sum: PropTypes.number,
+      checkbox: PropTypes.number,
+    }),
+  ),
+  onPressEditTraining: PropTypes.func.isRequired,
+  onPressMenu: PropTypes.func.isRequired,
+  tmp: PropTypes.shape({
+    groupId: PropTypes.number.isRequired,
+    groupName: PropTypes.string.isRequired,
+    trainerId: PropTypes.number.isRequired,
+    trainerName: PropTypes.string.isRequired,
+    trainingId: PropTypes.number.isRequired,
+    date: PropTypes.instanceOf(Date).isRequired,
+  }),
+  onPressCashFlow: PropTypes.func.isRequired,
+};
 
-  render() {
-    return (
-      <Modal
-        visible={this.props.display}
-        animationType="slide"
-        onRequestClose={() => console.log('closed')}
-        transparent
-      >
-        <View style={styles.modalWrapper}>
-          <Text>Добавить примечание</Text>
-          <TextInput
-            placeholder="..."
-            onChangeText={text => this.props.onEnterField(text, 'notice')}
-          />
-          <Button
-            onPress={() => this.onEnterNotice(this.props.tmp.notice, this.props.tmp.student_id)}
-            title="Сохранить"
-          />
-          <Button onPress={() => this.props.onClickModal()} title="Отмена" />
-        </View>
-      </Modal>
-    );
-  }
-}
+CashFlowList.defaultProps = {
+  cashflows: PropTypes.shape({
+    cashId: null,
+    notice: null,
+    sum: null,
+    checkbox: null,
+  }),
+  tmp: PropTypes.shape({
+    date: null,
+  }),
+};

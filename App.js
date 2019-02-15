@@ -22,6 +22,7 @@ import UserForm from './Src/UserForm';
 import SetupForm from './Src/SetupForm';
 import CashFlowList from './Src/CashFlowList';
 import TrainingForm from './Src/TrainingForm';
+import CashFlowForm from './Src/CashFlowForm';
 // Import Constants
 import * as consts from './Src/const';
 
@@ -55,6 +56,7 @@ export default class App extends Component {
     loading: false,
     showModal: false,
     showCalendar: false,
+    cashFlowModal: null,
     calendarMarks: {},
     tmp: {},
   };
@@ -99,10 +101,19 @@ export default class App extends Component {
     this.setState({ showCalendar: !showCalendar });
   };
 
-  changeDate = date => this.setState({
-    firstDate: new Date(date).setHours(0, 0, 0, 0),
-    lastDate: new Date(date).setHours(24, 0, 0, 0),
-  });
+  changeDate = date => this.setState(
+    {
+      firstDate: new Date(date).setHours(0, 0, 0, 0),
+      lastDate: new Date(date).setHours(24, 0, 0, 0),
+    },
+    this.reloadTrainings,
+  );
+
+  reloadTrainings = async () => {
+    const { firstDate, lastDate } = this.state;
+    await this.getTrainingList(firstDate, lastDate);
+    this.onClickCalendar();
+  };
 
   makeTwoDigits = digit => (digit.toString().length === 2 ? digit : `0${digit}`);
 
@@ -470,11 +481,24 @@ export default class App extends Component {
     }
   };
 
+  addCashFlow = () => {
+    console.log(this.state.tmp);
+  };
+
+  editCashFlow = () => {
+    console.log('kek');
+  };
+
+  cancelCashFlowChanges = async (trainingId) => {
+    await this.getCashFlows(trainingId);
+    this.onPressTraining(trainingId);
+  };
+
   //= ====Pressing section=====
 
   onPressGroup = async (id) => {
     await this.getStudentList(id);
-    this.setState({ loadScreen: id });
+    this.setState({ loadScreen: id, showModal: true });
   };
 
   onPressAddGroup = async () => {
@@ -507,13 +531,13 @@ export default class App extends Component {
   onPressEditGroup = async (id) => {
     const { groupList } = this.state;
     await this.getUserList();
-    const [getGroup] = groupList.filter(item => item.groups_id === id);
+    const [getGroup] = groupList.filter(item => item.groupId === id);
     this.setState({
       loadScreen: { group: id },
       tmp: {
         groupId: id,
-        groupName: getGroup.groups_name,
-        trainerId: getGroup.users_id,
+        groupName: getGroup.groupName,
+        trainerId: getGroup.userId,
       },
       showModal: true,
     });
@@ -522,8 +546,8 @@ export default class App extends Component {
   onPressUser = async (id) => {
     const { userList } = this.state;
     await this.getUserList();
-    const currentUser = userList.filter(item => item.id === id)[0];
-    this.setState({ loadScreen: { user: id }, tmp: currentUser });
+    const [currentUser] = userList.filter(item => item.id === id);
+    this.setState({ loadScreen: { user: id }, tmp: currentUser, showModal: true });
   };
 
   onPressStudent = async (id, name, groupId) => {
@@ -543,28 +567,58 @@ export default class App extends Component {
   };
 
   cancelAddStudent = (groupId) => {
-    this.setState({ tmp: {}, loadScreen: groupId, showModal: false });
+    this.setState({ tmp: {}, loadScreen: groupId });
   };
 
-  onPressTraining = async (id) => {
+  onPressTraining = async (trainingId) => {
     const { trainingList } = this.state;
-    const [getTraining] = trainingList.filter(item => item.trainingId === id);
+    const [getTraining] = trainingList.filter(item => item.trainingId === trainingId);
     const {
       trainingDate, groupName, trainerId, trainerName, groupId,
     } = getTraining;
     await this.getUserList();
-    await this.getCashFlows(id);
+    await this.getCashFlows(trainingId);
     this.setState({
-      loadScreen: { cashflows: id },
+      loadScreen: { cashflows: trainingId },
       showModal: true,
       tmp: {
-        id,
+        trainingId,
         groupId,
         trainerId,
         trainerName,
         groupName,
         date: new Date(trainingDate),
-        cashflows: [],
+      },
+    });
+  };
+
+  onPressCashFlow = (cashflow) => {
+    const { cashflows, tmp } = this.state;
+    const { cashId, studentId, studentName } = cashflow;
+    if (!cashId) {
+      return this.setState({
+        loadScreen: { singleCash: 'new' },
+        tmp: {
+          ...tmp,
+          studentId,
+          studentName,
+          cashId: 'new',
+        },
+      });
+    }
+    const [getCashFlow] = cashflows.filter(item => item.cashId === cashId);
+    const { sum, notice, checkbox } = getCashFlow;
+    return this.setState({
+      loadScreen: { singleCash: cashId },
+      showModal: true,
+      tmp: {
+        ...tmp,
+        sum,
+        notice,
+        checkbox,
+        studentId,
+        studentName,
+        cashId,
       },
     });
   };
@@ -574,11 +628,29 @@ export default class App extends Component {
     await this.getGroupList();
     const { userList, groupList } = this.state;
     const trainerId = userList[0].id;
-    const groupId = groupList[0].id;
+    const { groupId } = groupList[0];
     this.setState({
       loadScreen: { training: 'new' },
       showModal: true,
-      tmp: { id: 'new', groupId, trainerId },
+      tmp: { trainingId: 'new', groupId, trainerId },
+    });
+  };
+
+  onPressEditTraining = async (id) => {
+    await this.getUserList();
+    await this.getGroupList();
+    const { trainingList } = this.state;
+    const [getTraining] = trainingList.filter(item => item.trainingId === id);
+    const { groupId, trainerId, trainingDate } = getTraining;
+    this.setState({
+      loadScreen: { training: id },
+      showModal: true,
+      tmp: {
+        id,
+        groupId,
+        trainerId,
+        trainingDate,
+      },
     });
   };
 
@@ -587,7 +659,7 @@ export default class App extends Component {
   };
 
   onPressExit = () => {
-    this.setState({ auth: 'none', role: 'none' });
+    this.setState({ auth: 'none', role: 'none', loadScreen: menu.button1 });
   };
 
   //= ====Main menu actions=====
@@ -760,7 +832,7 @@ export default class App extends Component {
 
   renderCashFlowList = () => {
     const {
-      cashflows, showModal, userList, tmp,
+      cashflows, showModal, userList, tmp, cashFlowModal,
     } = this.state;
     return (
       <CashFlowList
@@ -774,6 +846,9 @@ export default class App extends Component {
         tmp={tmp}
         onEnterField={this.onEnterField}
         onPressMenu={this.onPressMenu}
+        cashFlowModal={cashFlowModal}
+        onPressCashFlow={this.onPressCashFlow}
+        onPressEditTraining={this.onPressEditTraining}
       />
     );
   };
@@ -790,6 +865,19 @@ export default class App extends Component {
         userList={userList}
         cancelTraining={this.cancelTraining}
         cancelAddTraining={this.cancelAddTraining}
+      />
+    );
+  };
+
+  renderCashFlowForm = () => {
+    const { tmp } = this.state;
+    return (
+      <CashFlowForm
+        tmp={tmp}
+        onEnterField={this.onEnterField}
+        addCashFlow={this.addCashFlow}
+        editCashFlow={this.editCashFlow}
+        cancelCashFlowChanges={this.cancelCashFlowChanges}
       />
     );
   };
@@ -811,6 +899,9 @@ export default class App extends Component {
     }
     if (loadScreen.training) {
       return this.renderTrainingForm();
+    }
+    if (loadScreen.singleCash) {
+      return this.renderCashFlowForm();
     }
     switch (loadScreen) {
       case menu.button1:
